@@ -1,0 +1,44 @@
+# Nuxt / Nitro outputs
+.nuxt/
+.output/
+.nitro/
+.data/
+dist/
+
+# Dependencies
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Test / coverage
+coverage/
+.nyc_output/
+
+# Caches
+.cache/
+.eslintcache
+*.tsbuildinfo
+
+# System / editor
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.fleet
+.idea
+*.swp
+
+# Local env files
+.env
+.env.*
+!.env.example
+
+# Deployment / local tooling
+.vercel/
+.netlify/

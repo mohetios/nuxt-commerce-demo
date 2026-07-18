@@ -1,0 +1,57 @@
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.preferences.preferTypeOnlyAutoImports": true,
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  "vue.server.hybridMode": true,
+  "vue.inlayHints.destructuredProps": true,
+  "eslint.useFlatConfig": true,
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "vue"
+  ],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "tailwindCSS.experimental.configFile": "app/assets/css/main.css",
+  "tailwindCSS.classAttributes": [
+    "class",
+    "className",
+    "ui"
+  ],
+  "tailwindCSS.includeLanguages": {
+    "vue": "html"
+  },
+  "tailwindCSS.experimental.classRegex": [
+    ["ui:\\s*\\{([^}]*)\\}", "[\"'`]([^\"'`]*)[\"'`]"],
+    ["class:\\s*[\"'`]([^\"'`]*)[\"'`]"],
+    ["\\b(?:class|ui)=\\s*[\"'`]([^\"'`]*)[\"'`]"]
+  ],
+  "iconify.includes": [
+    "i-lucide-*",
+    "i-simple-icons-*"
+  ],
+  "files.associations": {
+    "*.css": "tailwindcss",
+    "*.vue": "vue"
+  },
+  "files.exclude": {
+    "**/.nuxt": true,
+    "**/.output": true,
+    "**/.nitro": true
+  },
+  "search.exclude": {
+    "**/.nuxt": true,
+    "**/.output": true,
+    "**/.nitro": true,
+    "**/node_modules": true
+  }
+}

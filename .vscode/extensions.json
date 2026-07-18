@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "antfu.iconify",
+    "bradlc.vscode-tailwindcss",
+    "dbaeumer.vscode-eslint",
+    "Vue.volar",
+    "Nuxtr.nuxtr-vscode"
+  ],
+  "unwantedRecommendations": [
+    "octref.vetur"
+  ]
+}
