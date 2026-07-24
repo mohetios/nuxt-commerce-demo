@@ -2,9 +2,9 @@
 @import "@nuxt/ui";
 
 @theme static {
-  --font-sans: 'Vazirmatn', sans-serif;
-  --font-serif: 'Vazirmatn', serif;
-  --font-mono: 'Vazirmatn', monospace;
+  --font-sans: "Vazirmatn", sans-serif;
+  --font-serif: "Vazirmatn", serif;
+  --font-mono: "Vazirmatn", monospace;
 
   --color-brand-50: #fff0f6;
   --color-brand-100: #ffe0ed;
@@ -17,4 +17,78 @@
   --color-brand-800: #870039;
   --color-brand-900: #700333;
   --color-brand-950: #45001d;
+
+  --color-canvas: #e8edf5;
+  --color-surface: #ffffff;
+  --color-surface-soft: #f8f9fc;
+  --color-field: #f5f7fa;
+  --color-surface-blue: #edf2fe;
+  --color-ink: #253343;
+  --color-muted-blue: #6783a0;
+  --color-soft-border: #e3e8f0;
+
+  --radius-control: 10px;
+  --radius-small-surface: 12px;
+  --radius-surface: 16px;
+  --radius-pill: 9999px;
+
+  --shadow-surface: 0 4px 14px rgb(37 51 67 / 6%);
+}
+
+:root {
+  /* Maps Nuxt UI rounded-* to Figma radii: md≈10, lg≈12, 2xl≈16 */
+  --ui-radius: 0.5rem;
+  --ui-bg: var(--color-canvas);
+  --ui-text: var(--color-ink);
+  --ui-text-muted: var(--color-muted-blue);
+  --ui-text-highlighted: var(--color-ink);
+  --ui-border: var(--color-soft-border);
+  --ui-bg-muted: var(--color-field);
+  --ui-bg-elevated: var(--color-surface);
+}
+
+@layer components {
+  .app-canvas {
+    @apply min-h-dvh bg-canvas text-ink;
+  }
+
+  .surface-card {
+    @apply rounded-2xl border border-soft-border bg-surface shadow-surface;
+  }
+
+  .surface-panel {
+    @apply rounded-2xl bg-surface;
+  }
+
+  .soft-row {
+    @apply rounded-md bg-field px-4 py-3;
+  }
+
+  .brand-outline-control {
+    @apply rounded-md border border-brand-300 bg-white;
+  }
+
+  .page-title {
+    @apply text-2xl font-bold leading-tight text-ink md:text-3xl;
+  }
+
+  .section-title {
+    @apply text-lg font-bold text-ink md:text-xl;
+  }
+
+  .card-title {
+    @apply text-sm font-semibold leading-6 text-ink md:text-base;
+  }
+
+  .body-text {
+    @apply text-sm leading-6 text-ink;
+  }
+
+  .secondary-text {
+    @apply text-xs leading-5 text-muted-blue md:text-sm;
+  }
+
+  .meta-text {
+    @apply text-xs font-medium text-muted-blue;
+  }
 }
