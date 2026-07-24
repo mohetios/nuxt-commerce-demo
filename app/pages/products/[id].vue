@@ -11,6 +11,42 @@ const { data: relatedProducts } = await useFetch<Product[]>(() => `/api/products
 const quantity = ref(1)
 const productImages = computed(() => product.value ? getProductImages(product.value) : [])
 
+const breadcrumbItems = computed(() => {
+  const items: Array<{ label: string, to?: string }> = [
+    { label: 'خانه', to: '/' },
+    { label: 'محصولات', to: '/' }
+  ]
+
+  if (product.value) {
+    items.push({ label: product.value.title })
+  }
+
+  return items
+})
+
+const specificationRows = computed(() => {
+  if (!product.value) {
+    return []
+  }
+
+  return [
+    { label: 'برند', value: 'Nuxt Market' },
+    { label: 'مدل', value: product.value.slug },
+    { label: 'دسته‌بندی', value: product.value.category },
+    { label: 'توضیحات', value: product.value.description },
+    { label: 'قیمت', value: formatProductPrice(product.value.price) },
+    { label: 'موجودی', value: String(product.value.stock) },
+    {
+      label: 'امتیاز',
+      value: `${getProductRating(product.value)} از ۵ (${getProductReviewCount(product.value)} نظر)`
+    },
+    {
+      label: 'وضعیت',
+      value: isProductInStock(product.value) ? 'موجود' : 'ناموجود'
+    }
+  ]
+})
+
 useSeoMeta({
   title: () => product.value ? `${product.value.title} | Nuxt Market` : 'محصول | Nuxt Market',
   description: () => product.value?.description,
@@ -21,17 +57,8 @@ useSeoMeta({
 </script>
 
 <template>
-  <UContainer class="py-8 lg:py-12">
-    <div class="mb-6">
-      <UButton
-        to="/"
-        color="neutral"
-        variant="ghost"
-        icon="i-lucide-arrow-right"
-      >
-        بازگشت به محصولات
-      </UButton>
-    </div>
+  <UContainer class="py-6 md:py-8">
+    <AppBreadcrumb :items="breadcrumbItems" />
 
     <UAlert
       v-if="error"
@@ -40,73 +67,63 @@ useSeoMeta({
       icon="i-lucide-circle-alert"
       title="بارگذاری محصول ناموفق بود"
       description="لطفاً به فهرست محصولات برگردید و دوباره تلاش کنید."
+      class="mb-6"
     />
 
     <div
       v-else-if="pending"
-      class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_420px]"
+      class="space-y-5"
     >
-      <USkeleton class="aspect-square rounded-lg" />
-      <div class="space-y-4">
-        <USkeleton class="h-10 w-2/3" />
-        <USkeleton class="h-24 w-full" />
-        <USkeleton class="h-72 w-full rounded-lg" />
-      </div>
+      <USkeleton class="h-8 w-64 rounded-md" />
+      <USkeleton class="aspect-[5/4] w-full rounded-2xl" />
+      <USkeleton class="h-72 w-full rounded-2xl" />
     </div>
 
-    <div
-      v-else-if="product"
-      class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_420px]"
-    >
-      <ProductGallery
-        :images="productImages"
-        :name="product.title"
-      />
+    <template v-else-if="product">
+      <div class="mb-5 space-y-3 md:hidden">
+        <UBadge
+          color="primary"
+          variant="soft"
+        >
+          {{ product.category }}
+        </UBadge>
+        <h1 class="page-title">
+          {{ product.title }}
+        </h1>
+        <p class="secondary-text">
+          {{ formatProductPrice(product.price) }}
+        </p>
+      </div>
 
-      <aside class="space-y-6">
-        <div class="space-y-4">
-          <div class="flex flex-wrap items-center gap-2">
-            <UBadge
-              color="primary"
-              variant="soft"
-            >
-              {{ product.category }}
-            </UBadge>
-          </div>
+      <div class="space-y-5">
+        <div class="grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.8fr)] lg:items-start">
+          <ProductGallery
+            :images="productImages"
+            :name="product.title"
+          />
 
-          <div>
-            <p class="text-sm font-medium tracking-wide text-muted">
-              دیتاپک دموی داخلی
-            </p>
-            <h1 class="mt-2 text-3xl font-bold tracking-normal text-highlighted sm:text-4xl">
-              {{ product.title }}
-            </h1>
-          </div>
-
-          <div class="flex items-center gap-3">
-            <div class="flex items-center gap-1 text-primary">
-              <UIcon
-                v-for="index in 5"
-                :key="index"
-                name="i-lucide-star"
-                class="size-4"
-              />
+          <aside class="surface-card space-y-5 p-4 sm:p-5">
+            <div class="hidden space-y-3 md:block">
+              <UBadge
+                color="primary"
+                variant="soft"
+              >
+                {{ product.category }}
+              </UBadge>
+              <h1 class="page-title">
+                {{ product.title }}
+              </h1>
+              <p class="secondary-text line-clamp-3">
+                {{ getProductSummary(product) }}
+              </p>
             </div>
-            <p class="text-sm text-muted">
-              امتیاز {{ getProductRating(product) }} از {{ getProductReviewCount(product) }} نظر
-            </p>
-          </div>
 
-          <p class="text-base leading-7 text-muted">
-            {{ product.description }}
-          </p>
-        </div>
-
-        <UCard :ui="{ body: 'p-5 sm:p-5' }">
-          <div class="space-y-5">
             <div class="flex items-end justify-between gap-4">
               <div>
-                <p class="text-3xl font-bold text-highlighted">
+                <p class="meta-text mb-1">
+                  قیمت
+                </p>
+                <p class="text-2xl font-bold text-ink md:text-3xl">
                   {{ formatProductPrice(product.price) }}
                 </p>
               </div>
@@ -118,7 +135,7 @@ useSeoMeta({
               </UBadge>
             </div>
 
-            <USeparator />
+            <USeparator class="border-soft-border" />
 
             <div class="grid gap-4 sm:grid-cols-2">
               <UFormField label="دسته‌بندی">
@@ -126,6 +143,7 @@ useSeoMeta({
                   :model-value="product.category"
                   readonly
                   icon="i-lucide-tags"
+                  :ui="{ base: 'bg-field ring-soft-border' }"
                 />
               </UFormField>
               <UFormField label="تعداد">
@@ -133,16 +151,18 @@ useSeoMeta({
                   v-model="quantity"
                   :min="1"
                   :max="Math.min(10, product.stock || 1)"
+                  :ui="{ base: 'rounded-md' }"
                 />
               </UFormField>
             </div>
 
-            <div class="grid gap-3 sm:grid-cols-2">
+            <div class="grid gap-3">
               <UButton
                 color="primary"
                 size="lg"
                 block
                 icon="i-lucide-shopping-cart"
+                class="text-sm"
                 :disabled="!isProductInStock(product)"
               >
                 افزودن به سبد
@@ -153,112 +173,38 @@ useSeoMeta({
                 size="lg"
                 block
                 icon="i-lucide-heart"
+                class="text-sm border-soft-border"
               >
                 ذخیره
               </UButton>
             </div>
-          </div>
-        </UCard>
+          </aside>
+        </div>
 
-        <UAccordion
-          type="multiple"
-          :default-value="['features']"
-          :items="[{
-            label: 'ویژگی‌ها',
-            icon: 'i-lucide-list-checks',
-            value: 'features',
-            slot: 'features'
-          }, {
-            label: 'مشخصات',
-            icon: 'i-lucide-ruler',
-            value: 'specs',
-            slot: 'specs'
-          }, {
-            label: 'ارسال و مرجوعی',
-            icon: 'i-lucide-truck',
-            value: 'shipping',
-            slot: 'shipping'
-          }]"
-        >
-          <template #features>
-            <ul class="space-y-2 pb-3 text-sm text-muted">
-              <li class="flex items-center gap-2">
-                <UIcon
-                  name="i-lucide-check"
-                  class="size-4 text-primary"
-                />
-                داده محصول از API داخلی Nuxt با رندر SSR بارگذاری می‌شود.
-              </li>
-              <li class="flex items-center gap-2">
-                <UIcon
-                  name="i-lucide-check"
-                  class="size-4 text-primary"
-                />
-                دسته‌بندی، قیمت، توضیحات، تصاویر و امتیاز از دیتاپک دمو تامین شده‌اند.
-              </li>
-            </ul>
-          </template>
+        <ProductSpecTable :rows="specificationRows" />
+      </div>
 
-          <template #specs>
-            <dl class="grid gap-3 pb-3 text-sm">
-              <div class="flex items-center justify-between gap-4 border-b border-default pb-2">
-                <dt class="text-muted">
-                  شناسه محصول
-                </dt>
-                <dd class="font-medium text-highlighted">
-                  {{ product.id }}
-                </dd>
-              </div>
-              <div class="flex items-center justify-between gap-4 border-b border-default pb-2">
-                <dt class="text-muted">
-                  دسته‌بندی
-                </dt>
-                <dd class="font-medium text-highlighted">
-                  {{ product.category }}
-                </dd>
-              </div>
-              <div class="flex items-center justify-between gap-4">
-                <dt class="text-muted">
-                  موجودی
-                </dt>
-                <dd class="font-medium text-highlighted">
-                  {{ product.stock }}
-                </dd>
-              </div>
-            </dl>
-          </template>
-
-          <template #shipping>
-            <p class="pb-3 text-sm leading-6 text-muted">
-              ارسال استاندارد رایگان برای سفارش‌های آزمایشی بالای ۷۵۰٬۰۰۰ تومان. مرجوعی تا ۳۰ روز در شرایط اولیه پذیرفته می‌شود.
-            </p>
-          </template>
-        </UAccordion>
-      </aside>
-    </div>
-
-    <section
-      v-if="product && relatedProducts.length"
-      class="mt-14"
-    >
-      <div class="mb-5 flex items-center justify-between gap-4">
+      <section
+        v-if="relatedProducts.length"
+        class="mt-10 space-y-4"
+      >
         <div>
-          <h2 class="text-2xl font-semibold tracking-normal text-highlighted">
+          <h2 class="section-title">
             محصولات مرتبط
           </h2>
-          <p class="mt-1 text-sm text-muted">
+          <p class="secondary-text mt-1">
             بیشتر از {{ product.category }}
           </p>
         </div>
-      </div>
 
-      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        <ProductCard
-          v-for="item in relatedProducts"
-          :key="item.id"
-          :product="item"
-        />
-      </div>
-    </section>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ProductCard
+            v-for="item in relatedProducts"
+            :key="item.id"
+            :product="item"
+          />
+        </div>
+      </section>
+    </template>
   </UContainer>
 </template>
