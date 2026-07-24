@@ -50,7 +50,7 @@ function onImageError() {
     <template #footer>
       <div class="space-y-1">
         <p class="meta-text">
-          {{ product.category }}
+          <span v-if="product.model">مدل {{ product.model }} · </span>{{ product.category }}
         </p>
         <NuxtLink
           :to="`/products/${product.id}`"

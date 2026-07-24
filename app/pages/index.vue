@@ -74,7 +74,7 @@ const visibleProducts = computed(() => {
 
   const filtered = query
     ? categoryProducts.filter((product) => {
-        const haystack = `${product.title} ${product.category} ${product.description}`.toLowerCase()
+        const haystack = `${product.title} ${product.model ?? ''} ${product.category} ${product.description}`.toLowerCase()
         return haystack.includes(query)
       })
     : categoryProducts

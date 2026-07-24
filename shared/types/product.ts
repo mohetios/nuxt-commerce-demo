@@ -3,6 +3,11 @@ export type ProductRating = {
   count: number
 }
 
+export type ProductSpecification = {
+  label: string
+  value: string
+}
+
 export type Product = {
   id: number
   title: string
@@ -15,4 +20,6 @@ export type Product = {
   rating: ProductRating
   stock: number
   featured: boolean
+  model?: string
+  specifications?: ProductSpecification[]
 }

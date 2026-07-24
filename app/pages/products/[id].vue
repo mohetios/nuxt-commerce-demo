@@ -29,22 +29,29 @@ const specificationRows = computed(() => {
     return []
   }
 
-  return [
+  const baseRows = [
     { label: 'برند', value: 'Nuxt Market' },
-    { label: 'مدل', value: product.value.slug },
+    { label: 'مدل', value: product.value.model || product.value.slug },
     { label: 'دسته‌بندی', value: product.value.category },
-    { label: 'توضیحات', value: product.value.description },
-    { label: 'قیمت', value: formatProductPrice(product.value.price) },
-    { label: 'موجودی', value: String(product.value.stock) },
-    {
-      label: 'امتیاز',
-      value: `${getProductRating(product.value)} از ۵ (${getProductReviewCount(product.value)} نظر)`
-    },
-    {
-      label: 'وضعیت',
-      value: isProductInStock(product.value) ? 'موجود' : 'ناموجود'
-    }
+    { label: 'توضیحات', value: product.value.description }
   ]
+
+  const technicalRows = product.value.specifications?.length
+    ? product.value.specifications
+    : [
+        { label: 'قیمت', value: formatProductPrice(product.value.price) },
+        { label: 'موجودی', value: String(product.value.stock) },
+        {
+          label: 'امتیاز',
+          value: `${getProductRating(product.value)} از ۵ (${getProductReviewCount(product.value)} نظر)`
+        },
+        {
+          label: 'وضعیت',
+          value: isProductInStock(product.value) ? 'موجود' : 'ناموجود'
+        }
+      ]
+
+  return [...baseRows, ...technicalRows]
 })
 
 useSeoMeta({
