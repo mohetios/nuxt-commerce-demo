@@ -7,12 +7,13 @@ useHead({
     { rel: 'icon', href: '/favicon.ico' }
   ],
   htmlAttrs: {
-    lang: 'en'
+    lang: 'fa',
+    dir: 'rtl'
   }
 })
 
-const title = 'Nuxt Commerce Test'
-const description = 'A clean Nuxt UI commerce mockup with product list and detail pages.'
+const title = 'Nuxt Market'
+const description = 'فروشگاه دموی Nuxt با کاتالوگ فارسی، API داخلی و رندر کامل SSR.'
 
 useSeoMeta({
   title,

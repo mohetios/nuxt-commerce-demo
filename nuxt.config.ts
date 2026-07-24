@@ -5,11 +5,19 @@ export default defineNuxtConfig({
     '@nuxt/ui'
   ],
 
+  ssr: true,
+
   devtools: {
     enabled: true
   },
 
   css: ['~/assets/css/main.css'],
+
+  routeRules: {
+    '/': { ssr: true },
+    '/products/**': { ssr: true },
+    '/api/**': { ssr: false }
+  },
 
   compatibilityDate: '2026-06-30',
 

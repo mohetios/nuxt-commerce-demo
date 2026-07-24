@@ -4,34 +4,34 @@
       <div class="space-y-4">
         <AppLogo class="h-9 w-auto text-highlighted" />
         <p class="max-w-sm text-sm leading-6 text-muted">
-          A focused Nuxt UI storefront mockup with clean product browsing and detail pages.
+          فروشگاه دموی Nuxt با کاتالوگ فارسی، API داخلی و رندر کامل سمت سرور.
         </p>
       </div>
 
       <div class="grid gap-6 sm:grid-cols-3">
         <div>
           <p class="mb-3 text-sm font-semibold text-highlighted">
-            Shop
+            فروشگاه
           </p>
           <ul class="space-y-2 text-sm text-muted">
-            <li>New arrivals</li>
-            <li>Best sellers</li>
-            <li>Gift cards</li>
+            <li>تازه‌ها</li>
+            <li>پرفروش‌ها</li>
+            <li>کارت هدیه</li>
           </ul>
         </div>
         <div>
           <p class="mb-3 text-sm font-semibold text-highlighted">
-            Support
+            پشتیبانی
           </p>
           <ul class="space-y-2 text-sm text-muted">
-            <li>Shipping</li>
-            <li>Returns</li>
-            <li>Contact</li>
+            <li>ارسال</li>
+            <li>مرجوعی</li>
+            <li>تماس</li>
           </ul>
         </div>
         <div>
           <p class="mb-3 text-sm font-semibold text-highlighted">
-            Follow
+            شبکه‌ها
           </p>
           <div class="flex gap-2">
             <UButton
