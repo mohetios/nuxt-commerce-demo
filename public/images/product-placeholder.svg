@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800" role="img" aria-label="*5HÌ1 EH,H/ FÌ3*">
+  <rect width="800" height="800" fill="#f4f4f5"/>
+  <rect x="260" y="240" width="280" height="220" rx="20" fill="none" stroke="#d4d4d8" stroke-width="10"/>
+  <circle cx="350" cy="310" r="32" fill="#d4d4d8"/>
+  <path d="M290 420 L360 340 L410 390 L460 330 L510 420 Z" fill="#d4d4d8"/>
+  <text x="400" y="540" text-anchor="middle" font-family="Vazirmatn, system-ui, sans-serif" font-size="28" fill="#a1a1aa">*5HÌ1 EH,H/ FÌ3*</text>
+</svg>

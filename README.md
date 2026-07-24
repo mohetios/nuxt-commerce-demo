@@ -622,7 +622,14 @@ npm run deploy
 
 This builds with the `cloudflare_pages` Nitro preset and uploads `dist/` through Wrangler.
 
-Demo product images are served from `GET /api/images/{productId}/{slot}` (and `/api/images/hero`). On first request the Nitro handler tries Unsplash, stores bytes in the `IMAGES_KV` binding (`demo-commerc-images` in `wrangler.jsonc`), and returns same-origin responses on later hits. If Unsplash is unreachable (common on restricted networks), it falls back to `server/assets/demo-images/` seeds and still warms KV. Local `nuxt dev` uses the same binding via `nitro-cloudflare-dev`.
+Demo product images are served from `GET /api/images/{productId}/{slot}` (and `/api/images/hero`). On first request the Nitro handler tries Unsplash, stores bytes in the `IMAGES_KV` binding (`demo-commerc-images` in `wrangler.jsonc`), and returns same-origin responses on later hits. If Unsplash is unreachable (common on restricted networks), it falls back to `server/assets/demo-images/` seeds and still warms KV. If both upstream and seed fail (or KV is unavailable), the handler still returns HTTP 200 with an SVG placeholder so NuxtImg never receives a hard error. Catalog/detail cards also swap to `/images/product-placeholder.svg` on `@error`. Local `nuxt dev` uses the same binding via `nitro-cloudflare-dev`.
+
+`wrangler.jsonc` binds `IMAGES_KV` to:
+
+- production id: `8f718a0081784f56bd9fe2f3d03255a6` (`demo-commerc-images`)
+- preview id: `8ba3ed241d624d288d47b851c61a2413` (`demo-commerc-images_preview`)
+
+`npm run deploy` applies that binding from config. If the Pages project was created before the KV block existed, confirm **Settings → Functions → KV namespace bindings** shows `IMAGES_KV` pointing at `demo-commerc-images`.
 
 ## Known Limitations
 

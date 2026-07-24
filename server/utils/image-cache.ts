@@ -26,11 +26,19 @@ export type ImagesKv = {
 export type CachedImage = {
   body: ArrayBuffer
   contentType: string
-  cacheStatus: 'HIT' | 'MISS' | 'BYPASS' | 'SEED'
+  cacheStatus: 'HIT' | 'MISS' | 'BYPASS' | 'SEED' | 'FALLBACK'
 }
 
 /** 30 days — demo images rarely change. */
 const IMAGE_TTL_SECONDS = 60 * 60 * 24 * 30
+
+const PLACEHOLDER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800" role="img" aria-label="تصویر موجود نیست">
+  <rect width="800" height="800" fill="#f4f4f5"/>
+  <rect x="260" y="240" width="280" height="220" rx="20" fill="none" stroke="#d4d4d8" stroke-width="10"/>
+  <circle cx="350" cy="310" r="32" fill="#d4d4d8"/>
+  <path d="M290 420 L360 340 L410 390 L460 330 L510 420 Z" fill="#d4d4d8"/>
+  <text x="400" y="540" text-anchor="middle" font-family="system-ui,sans-serif" font-size="28" fill="#a1a1aa">تصویر موجود نیست</text>
+</svg>`
 
 type ImageRef
   = | { kind: 'hero' }
@@ -88,6 +96,15 @@ function toArrayBuffer(value: unknown): ArrayBuffer | null {
   return null
 }
 
+function getPlaceholderImage(): CachedImage {
+  const bytes = new TextEncoder().encode(PLACEHOLDER_SVG)
+  return {
+    body: bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer,
+    contentType: 'image/svg+xml; charset=utf-8',
+    cacheStatus: 'FALLBACK'
+  }
+}
+
 async function fetchUpstreamImage(sourceUrl: string) {
   const response = await fetch(sourceUrl, {
     headers: {
@@ -103,18 +120,26 @@ async function fetchUpstreamImage(sourceUrl: string) {
   const contentType = response.headers.get('content-type')?.split(';')[0]?.trim() || 'image/jpeg'
   const body = await response.arrayBuffer()
 
+  if (!body.byteLength) {
+    throw new Error('Upstream image fetch returned empty body')
+  }
+
   return { body, contentType }
 }
 
 async function readSeedImage(seedPath: string) {
-  const raw = await useStorage('assets:server').getItemRaw(seedPath)
-  const body = toArrayBuffer(raw)
+  try {
+    const raw = await useStorage('assets:server').getItemRaw(seedPath)
+    const body = toArrayBuffer(raw)
 
-  if (!body || body.byteLength === 0) return null
+    if (!body || body.byteLength === 0) return null
 
-  return {
-    body,
-    contentType: 'image/jpeg'
+    return {
+      body,
+      contentType: 'image/jpeg'
+    }
+  } catch {
+    return null
   }
 }
 
@@ -125,10 +150,7 @@ async function resolveImageBytes(sourceUrl: string, seedPath: string) {
   } catch {
     const seeded = await readSeedImage(seedPath)
     if (!seeded) {
-      throw createError({
-        statusCode: 502,
-        statusMessage: 'Image unavailable from upstream and local seed'
-      })
+      return null
     }
     return { ...seeded, fromSeed: true as const }
   }
@@ -152,32 +174,47 @@ async function writeImageCache(
   }
 }
 
+async function readImageCache(kv: ImagesKv | undefined, key: string) {
+  if (!kv) return null
+
+  try {
+    const cached = await kv.getWithMetadata(key, 'arrayBuffer')
+    if (!cached.value || cached.value.byteLength === 0) return null
+
+    return {
+      body: cached.value,
+      contentType: cached.metadata?.contentType || 'image/jpeg',
+      cacheStatus: 'HIT' as const
+    }
+  } catch {
+    // Cache read failures should fall through to upstream/seed/placeholder.
+    return null
+  }
+}
+
+/**
+ * Always resolves to a valid image body.
+ * Prefer KV → Unsplash → seed bytes → inline SVG placeholder (never throws).
+ */
 export async function getCachedOrFetchImage(
   kv: ImagesKv | undefined,
   ref: ImageRef
 ): Promise<CachedImage> {
   const resolved = resolveImageSource(ref)
   if (!resolved) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: 'Image not found'
-    })
+    return getPlaceholderImage()
   }
 
   const { key, sourceUrl, seedPath } = resolved
 
-  if (kv) {
-    const cached = await kv.getWithMetadata(key, 'arrayBuffer')
-    if (cached.value) {
-      return {
-        body: cached.value,
-        contentType: cached.metadata?.contentType || 'image/jpeg',
-        cacheStatus: 'HIT'
-      }
-    }
-  }
+  const cached = await readImageCache(kv, key)
+  if (cached) return cached
 
   const image = await resolveImageBytes(sourceUrl, seedPath)
+  if (!image) {
+    return getPlaceholderImage()
+  }
+
   await writeImageCache(kv, key, image.body, image.contentType)
 
   return {
@@ -189,7 +226,15 @@ export async function getCachedOrFetchImage(
   }
 }
 
+export function getPlaceholderCachedImage() {
+  return getPlaceholderImage()
+}
+
 export function getImagesKv(event: H3Event): ImagesKv | undefined {
-  const cloudflare = event.context.cloudflare as { env?: { IMAGES_KV?: ImagesKv } } | undefined
-  return cloudflare?.env?.IMAGES_KV
+  try {
+    const cloudflare = event.context.cloudflare as { env?: { IMAGES_KV?: ImagesKv } } | undefined
+    return cloudflare?.env?.IMAGES_KV
+  } catch {
+    return undefined
+  }
 }

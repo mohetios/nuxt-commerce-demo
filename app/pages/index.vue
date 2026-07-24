@@ -33,6 +33,14 @@ const sortItems = [
   { label: 'بالاترین امتیاز', value: 'rating' }
 ]
 
+const heroImageSrc = ref('/api/images/hero')
+
+function onHeroImageError() {
+  if (heroImageSrc.value !== PRODUCT_IMAGE_PLACEHOLDER) {
+    heroImageSrc.value = PRODUCT_IMAGE_PLACEHOLDER
+  }
+}
+
 const visibleProducts = computed(() => {
   const categoryProducts = selectedCategory.value === 'همه'
     ? products.value
@@ -92,7 +100,7 @@ const visibleProducts = computed(() => {
 
         <div class="relative aspect-[4/3] overflow-hidden rounded-lg border border-default bg-muted">
           <NuxtImg
-            src="/api/images/hero"
+            :src="heroImageSrc"
             alt="نمایش محصولات فروشگاه"
             class="h-full w-full object-cover"
             width="840"
@@ -102,6 +110,7 @@ const visibleProducts = computed(() => {
             fetchpriority="high"
             placeholder
             quality="80"
+            @error="onHeroImageError"
           />
           <div class="absolute inset-x-4 bottom-4">
             <UCard :ui="{ body: 'p-4 sm:p-4' }">

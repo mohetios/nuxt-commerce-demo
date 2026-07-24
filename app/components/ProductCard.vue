@@ -1,7 +1,22 @@
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   product: Product
 }>()
+
+const imageSrc = ref(props.product.image)
+
+watch(
+  () => props.product.image,
+  (src) => {
+    imageSrc.value = src
+  }
+)
+
+function onImageError() {
+  if (imageSrc.value !== PRODUCT_IMAGE_PLACEHOLDER) {
+    imageSrc.value = PRODUCT_IMAGE_PLACEHOLDER
+  }
+}
 </script>
 
 <template>
@@ -18,7 +33,7 @@ defineProps<{
     >
       <div class="relative aspect-[4/3] overflow-hidden bg-muted">
         <NuxtImg
-          :src="product.image"
+          :src="imageSrc"
           :alt="product.title"
           class="h-full w-full object-cover p-2 transition duration-300 hover:scale-105"
           width="640"
@@ -27,6 +42,7 @@ defineProps<{
           loading="lazy"
           placeholder
           quality="75"
+          @error="onImageError"
         />
 
         <UBadge

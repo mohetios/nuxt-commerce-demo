@@ -1,5 +1,8 @@
 export const PRODUCT_API_BASE = '/api'
 
+/** Static SVG shown when a product/hero image URL fails to load. */
+export const PRODUCT_IMAGE_PLACEHOLDER = '/images/product-placeholder.svg'
+
 export function getProductRating(product: Product) {
   return product.rating.rate
 }
