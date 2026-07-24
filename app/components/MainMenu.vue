@@ -38,10 +38,12 @@ const links = [
     :items="links"
     :orientation="orientation"
     highlight
+    dir="rtl"
     :ui="{
+      root: orientation === 'horizontal' ? 'justify-start' : undefined,
       list: orientation === 'horizontal' ? 'gap-6' : 'gap-1',
-      link: 'gap-2 whitespace-nowrap text-sm font-semibold text-ink',
-      linkLeadingIcon: 'size-4 text-muted-blue'
+      link: 'gap-2 whitespace-nowrap text-sm font-semibold text-ink text-start',
+      linkLeadingIcon: 'size-4 shrink-0 text-muted-blue'
     }"
   />
 </template>

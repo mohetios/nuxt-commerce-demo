@@ -55,7 +55,8 @@ export default defineAppConfig({
       slots: {
         root: 'bg-surface border-b border-soft-border',
         container: 'h-16 lg:h-[4.5rem]',
-        center: 'gap-4'
+        center: 'hidden min-[900px]:flex gap-4',
+        toggle: 'min-[900px]:hidden'
       }
     },
     breadcrumb: {
