@@ -1,6 +1,6 @@
-# Nuxt Commerce Demo
+# فُروشگاه — Nuxt Commerce Demo
 
-A frontend commerce implementation built for a technical hiring challenge using Nuxt 4, Vue 3, TypeScript, Nuxt UI, and an internal Nitro demo product API. The storefront brand is **فُروشگاه** (logotype mark **فُـ**).
+A frontend commerce implementation built for a technical hiring challenge using **Nuxt 4**, Vue 3, TypeScript, **Nuxt UI 4**, and an internal Nitro demo product API. The storefront brand is **فُروشگاه** (logotype mark **فُـ**).
 
 The repository is intentionally documented as both:
 
@@ -9,7 +9,8 @@ The repository is intentionally documented as both:
 
 **Project status:** Core catalog browsing is live on Cloudflare Pages with full SSR, a Persian demo API, KV-backed product images, Figma-aligned tokens/layout, and placeholder support pages. Cart, favorites, automated tests, accessibility audit, and final pixel-perfect Figma filter review remain next steps.
 
-**Production:** [https://demo-commerce.mohetios.dev/](https://demo-commerce.mohetios.dev/)
+**Production:** [https://demo-commerce.mohetios.dev/](https://demo-commerce.mohetios.dev/)  
+**Repository:** [https://github.com/mohetios/nuxt-commerce-demo](https://github.com/mohetios/nuxt-commerce-demo)
 
 ## Full SSR Decision
 
@@ -24,7 +25,7 @@ This project is deliberately configured as a **full SSR** commerce UI.
 
 ### How SSR is implemented
 
-1. `ssr: true` is set explicitly in `nuxt.config.ts`, with page route rules forcing SSR for `/` and `/products/**`.
+1. `ssr: true` is set explicitly in `nuxt.config.ts`, with page route rules forcing SSR for `/` and `/products/**`. API routes use `{ ssr: false }` so `/api/**` stay Nitro handlers (not prerendered page SSR).
 2. Pages load data with Nuxt `useFetch` against internal routes such as `/api/products` and `/api/products/:id`.
 3. During server render, `useFetch` resolves those Nitro handlers in-process, embeds the payload into the SSR response, and hydrates the client without refetching by default.
 4. The demo catalog lives in `server/data/products.ts` and is exposed only through Nitro handlers. Pages never import the data pack directly.
@@ -43,6 +44,7 @@ Full SSR applies to storefront pages and their initial product payloads. Cart/fa
 
 - Production: [https://demo-commerce.mohetios.dev/](https://demo-commerce.mohetios.dev/)
 - Cloudflare Pages: [https://demo-commerc.pages.dev](https://demo-commerc.pages.dev)
+- GitHub: [https://github.com/mohetios/nuxt-commerce-demo](https://github.com/mohetios/nuxt-commerce-demo)
 - [Nuxt documentation](https://nuxt.com/docs)
 - [Nuxt UI documentation](https://ui.nuxt.com)
 - [Nitro server routes](https://nuxt.com/docs/guide/directory-structure/server)
@@ -66,18 +68,18 @@ The purpose of the project is not only to reproduce a static design. It is inten
 
 - Nuxt 4 application structure with `app/` directory
 - Vue 3 Composition API with `<script setup lang="ts">`
-- Nuxt UI and Tailwind CSS based interface
+- Nuxt UI 4 and Tailwind CSS 4 based interface
 - Brand **فُروشگاه** with **فُـ** logotype (`AppLogo`)
 - Shared default layout, `UHeader` chrome, RTL navigation (`dir="rtl"`), and footer
 - Persian RTL storefront (`lang="fa"` / `dir="rtl"`, Nuxt UI `fa_ir` locale)
-- Vazirmatn applied across Nuxt UI theme font tokens (`sans` / `serif` / `mono`)
+- Vazirmatn applied across Nuxt UI theme font tokens (`sans` / `serif` / `mono`) via `@nuxt/fonts` (bundled with Nuxt UI)
 - Internal Nitro demo API for products, categories, related items, and images
-- Server-side Persian demo data pack (`server/data/products.ts`) with window/door fixture naming
-- Typed product model and product helper functions
-- Responsive product-card grid and sticky catalog filter sidebar
+- Server-side Persian demo data pack (`server/data/products.ts`) — window/door fixtures (12 products)
+- Typed product model and product helper functions (`shared/`, Nuxt auto-imports)
+- Responsive product-card grid and sticky catalog filter sidebar (`CatalogFilters`)
 - Product category filtering and local catalog search
-- URL-backed category state using the `category` query parameter
-- Product sorting by featured order, price, and rating
+- URL-backed filter state: `category` and search `q` query parameters
+- Product sorting by featured order, price, and rating (page UI state)
 - Dynamic product detail route: `/products/:id`
 - Product gallery, specification table, and related-product selection
 - Dynamic SEO metadata for product and support pages
@@ -89,7 +91,7 @@ The purpose of the project is not only to reproduce a static design. It is inten
 - Placeholder pages for consultation, FAQ, and contact (`/consultation`, `/faq`, `/contact`)
 - Explicit full-SSR configuration
 - ESLint and strict TypeScript configuration
-- CI workflow for lint and typecheck only
+- CI workflow for lint and typecheck only (pins `packageManager` npm)
 - Local development, typecheck, lint, build, preview, and deploy scripts
 
 ### Planned
@@ -114,16 +116,17 @@ The purpose of the project is not only to reproduce a static design. It is inten
 | Framework | Nuxt 4 | Routing, full SSR rendering, application conventions, SEO |
 | UI runtime | Vue 3 | Reactive components and Composition API |
 | Language | TypeScript | API contracts, props, helpers, and stricter correctness checks |
-| Component system | Nuxt UI | Accessible UI primitives and consistent component APIs |
+| Component system | Nuxt UI 4 | Accessible UI primitives and consistent component APIs |
 | Styling | Tailwind CSS 4 | Responsive layout and design-token implementation |
 | Typography | Vazirmatn via `@nuxt/fonts` | Persian/Arabic storefront type across UI tokens |
-| Icons | Iconify | Lucide and brand icon collections |
-| Images | `@nuxt/image` + Nitro `/api/images` | Same-origin product media with KV cache and fallbacks |
+| Icons | Iconify (`lucide`, `simple-icons`) | UI actions and brand icon collections |
+| Images | `@nuxt/image` (`provider: 'none'`) + Nitro `/api/images` | Same-origin product media with KV cache and fallbacks |
 | Hosting | Cloudflare Pages + KV | Deploy target and durable demo image cache |
 | Data pack | `server/data/products.ts` | Persian demo catalog used by Nitro handlers |
 | Server API | Nitro `/api/*` | Products, categories, related products, and images |
 | Data fetching | Nuxt `useFetch` | SSR-resolved initial API requests and request state |
 | Quality | ESLint + Nuxt typecheck + GitHub Actions | Static analysis on every push/PR |
+| Package manager | npm (`packageManager`: `npm@11.18.0`) | Lockfile + CI npm pin |
 
 ## Architecture Overview
 
@@ -145,20 +148,22 @@ flowchart LR
         subgraph UI[Reusable UI Layer]
             Layout[Default Layout]
             Header[UHeader + Menu]
+            Filters[CatalogFilters]
             ProductCard[ProductCard]
             Gallery[ProductGallery]
+            Specs[ProductSpecTable]
             Footer[Footer]
         end
 
         subgraph Domain[Shared Auto-imports]
             Types["shared/types\nProduct"]
-            Helpers["shared/utils\nRating, price, summary"]
+            Helpers["shared/utils\nrating, price, images"]
         end
 
         Fetch[Nuxt useFetch]
         Nitro[Nitro /api handlers]
         DataPack[server/data/products.ts]
-        ImageKV[IMAGES_KV cache]
+        ImageKV[IMAGES_KV + seed bytes]
     end
 
     User --> Router
@@ -166,8 +171,10 @@ flowchart LR
     Router --> Detail
     Router --> Support
 
+    Catalog --> Filters
     Catalog --> ProductCard
     Detail --> Gallery
+    Detail --> Specs
     Detail --> ProductCard
 
     Layout --> Header
@@ -194,7 +201,7 @@ sequenceDiagram
     actor User
     participant Page as Catalog Page SSR
     participant Nuxt as useFetch
-    participant API as Nitro /api/products
+    participant API as Nitro /api
     participant State as Reactive/Computed State
     participant UI as ProductCard Grid
 
@@ -205,19 +212,19 @@ sequenceDiagram
     API-->>Nuxt: Product[] / categories
     Nuxt-->>Page: data / pending / error
 
-    Page->>State: Read category from route query
+    Page->>State: Read category + q from route query
     Page->>State: Apply category filter and search
     Page->>State: Apply selected sorting rule
     State-->>UI: visibleProducts
     UI-->>User: Responsive product grid
 
-    User->>Page: Change category
-    Page->>Page: Update URL query
+    User->>Page: Change category or apply search
+    Page->>Page: Update URL query (category, q)
     Page->>State: Recompute visible products
     State-->>UI: Updated product grid
 ```
 
-The URL is the source of truth for category selection. Sorting and local search remain page UI state because they do not yet need to be shareable or persisted.
+The URL is the source of truth for **category** (`?category=...`) and applied **search** (`?q=...`). Sorting remains page UI state because it does not yet need to be shareable or persisted.
 
 ### Product detail page
 
@@ -259,11 +266,12 @@ Remote server state (SSR via Nitro)
 └── Request status/error
 
 URL state
-└── Selected category
+├── Selected category (?category=)
+└── Applied catalog search (?q=)
 
 Local page state
 ├── Selected sort order
-├── Catalog search query
+├── Draft search text (synced to URL on apply)
 └── Selected quantity
 
 Derived state
@@ -282,12 +290,14 @@ This separation prevents temporary UI state from being mixed with API data and a
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
 | `GET` | `/api/products` | Full demo catalog |
-| `GET` | `/api/products?category=...` | Optional category filter |
+| `GET` | `/api/products?category=...` | Optional category filter (server-side) |
 | `GET` | `/api/products/:id` | Single product |
 | `GET` | `/api/products/:id/related` | Same-category related products |
 | `GET` | `/api/categories` | Unique category labels |
 | `GET` | `/api/images/{productId}/{slot}` | KV-backed product image bytes |
 | `GET` | `/api/images/hero` | KV-backed hero image |
+
+There is **no** external Fake Store (or other third-party commerce) API. The browser only talks to same-origin Nitro routes.
 
 ## Repository Structure
 
@@ -315,12 +325,17 @@ This separation prevents temporary UI state from being mixed with API data and a
 │       ├── faq.vue
 │       └── contact.vue
 ├── docs/figma-alignment/         # Figma alignment notes and fixtures
+│   ├── CURSOR_FIGMA_ALIGNMENT.md
+│   └── figma-demo-products.ts
+├── public/
+│   ├── favicon.ico
+│   └── images/product-placeholder.svg
 ├── server/
 │   ├── assets/demo-images/       # Offline image seeds for KV warm
 │   ├── data/
 │   │   ├── products.ts           # Persian demo data pack
 │   │   └── product-image-sources.ts
-│   ├── utils/image-cache.ts
+│   ├── utils/image-cache.ts      # KV get/put, Unsplash fetch, seed fallback
 │   └── api/
 │       ├── categories/index.get.ts
 │       ├── images/[...path].get.ts
@@ -331,11 +346,13 @@ This separation prevents temporary UI state from being mixed with API data and a
 ├── shared/
 │   ├── types/product.ts          # Product contract (auto-imported)
 │   └── utils/products.ts         # Product helpers (auto-imported)
-├── .github/workflows/ci.yml      # Lint + typecheck
+├── .github/workflows/ci.yml      # Lint + typecheck (npm packageManager pin)
+├── AGENTS.md                     # Agent/contributor scope and conventions
 ├── eslint.config.mjs
-├── nuxt.config.ts
+├── nuxt.config.ts                # SSR, fonts, image provider none, CF preset
 ├── wrangler.jsonc                # Pages + IMAGES_KV bindings
 ├── package.json
+├── package-lock.json
 ├── tsconfig.json
 └── README.md
 ```
@@ -364,15 +381,15 @@ A composable/API-client layer becomes useful when one or more of these condition
 
 ### 4. URL-backed filtering
 
-Category selection is represented by `?category=...` rather than hidden global state. It survives refreshes and creates directly shareable catalog views.
+Category selection (`?category=...`) and applied search (`?q=...`) are represented in the URL rather than hidden global state. They survive refreshes and create shareable catalog views. Sorting stays local until there is a clear need to share it.
 
 ### 5. Derived data stays computed
 
-Filtered products, sorted products, and image lists are derived with `computed` state instead of being duplicated and manually synchronized.
+Filtered products, sorted products, and image lists are derived with `computed` state instead of being duplicated and manually synchronized. Catalog filtering currently runs in the page after `GET /api/products`; the collection endpoint also accepts an optional `category` query for server-side filtering when needed.
 
 ### 6. Reusable components remain presentation-focused
 
-`ProductCard` receives a typed product and renders it. The catalog page owns filtering and sorting; the detail page owns route-aware fetching and product-specific orchestration.
+`ProductCard` receives a typed product and renders it. The catalog page owns filtering and sorting; the detail page owns route-aware fetching and product-specific orchestration. `CatalogFilters`, `ProductGallery`, and `ProductSpecTable` stay focused on UI.
 
 ### 7. Strictness without custom framework overrides
 
@@ -384,7 +401,7 @@ The project keeps Nuxt's generated TypeScript project references and adds strict
 
 ### 8. Cloudflare-safe images
 
-`@nuxt/image` uses `provider: 'none'` because IPX/Sharp is incompatible with Cloudflare Pages SSR. Product bytes are served from Nitro `/api/images/*` with KV caching and offline seed fallbacks.
+`@nuxt/image` uses `provider: 'none'` because IPX/Sharp is incompatible with Cloudflare Pages SSR. Product bytes are served from Nitro `/api/images/*` with KV caching and offline seed fallbacks from `server/assets/demo-images/`.
 
 ## Intended Target Architecture
 
@@ -440,7 +457,7 @@ flowchart LR
     B[2. Inventory screens, states, breakpoints]
     C[3. Define tokens and component boundaries]
     D[4. Build shared layout and primitives]
-    E[5. Connect typed product API]
+    E[5. Connect typed Nitro demo API]
     F[6. Implement catalog]
     G[7. Implement product detail]
     H[8. Add cart and favorites]
@@ -462,7 +479,7 @@ flowchart LR
 
 Notes on the plan colors:
 
-- **Done:** foundation through product detail, catalog loading/error/empty filter states, Cloudflare deploy + production domain, and delivery docs.
+- **Done:** foundation through product detail (Nitro/KV, not Fake Store), catalog loading/error/empty filter states, Cloudflare deploy + production domain, and delivery docs.
 - **Active:** cart/favorites commerce interactions, plus remaining responsive/a11y polish and pixel-level Figma filter fidelity.
 - **Planned:** automated tests and a deeper performance review beyond the current image pipeline.
 
@@ -473,7 +490,7 @@ Notes on the plan colors:
 **Status:** Complete
 
 - Nuxt 4 project initialized
-- Nuxt UI and global styling configured
+- Nuxt UI 4 and global styling configured
 - Strict TypeScript and ESLint enabled
 - Shared layout and navigation established
 - Persian RTL chrome and Vazirmatn typography configured
@@ -486,7 +503,7 @@ Notes on the plan colors:
 - Product collection loads from the internal Nitro demo API
 - Loading and error states exist
 - Category filter and local search work
-- Selected category is represented in the URL
+- Selected category and applied search are represented in the URL
 - Sort options work without mutating source data
 - Product cards are responsive and reusable
 - Sticky filter sidebar and Figma-aligned catalog shell are in place
@@ -566,7 +583,7 @@ npm run check
 npm run build
 ```
 
-CI currently runs `npm run lint` and `npm run typecheck` on every push and pull request.
+CI currently runs **only** `npm run lint` and `npm run typecheck` on every push and pull request. See [Setup → CI note](#ci-note) for the `packageManager` npm pin.
 
 ### Planned component coverage
 
@@ -636,8 +653,8 @@ Commits should stay focused: one understandable product or engineering change pe
 
 ### Prerequisites
 
-- Node.js compatible with the current Nuxt release
-- npm 11 or a compatible npm version
+- Node.js 22+ (CI uses Node 22; compatible with the current Nuxt release)
+- npm matching `package.json` `packageManager` (`npm@11.18.0`) — or install that version in CI as the workflow does
 
 ### Install
 
@@ -651,7 +668,7 @@ npm install
 npm run dev
 ```
 
-The app is available at [http://localhost:3000](http://localhost:3000) by default.
+The app is available at [http://localhost:3000](http://localhost:3000) by default. Local `nuxt dev` uses the `IMAGES_KV` binding via `nitro-cloudflare-dev`.
 
 ### Quality checks
 
@@ -663,19 +680,34 @@ Or run the checks independently:
 
 ```bash
 npm run lint
+npm run lint:fix
 npm run typecheck
 ```
 
 ### Production build
 
+Default Nuxt build (uses `nitro.preset: 'cloudflare_pages'` from `nuxt.config.ts`):
+
 ```bash
 npm run build
+```
+
+Explicit Cloudflare Pages preset:
+
+```bash
+npm run build:cf
 ```
 
 ### Preview
 
 ```bash
 npm run preview
+```
+
+Cloudflare Pages local preview of `dist/`:
+
+```bash
+npm run preview:cf
 ```
 
 ### Cloudflare Pages
@@ -688,9 +720,9 @@ Cloudflare Pages URL: https://demo-commerc.pages.dev
 npm run deploy
 ```
 
-This builds with the `cloudflare_pages` Nitro preset and uploads `dist/` through Wrangler.
+This runs `build:cf` and uploads `dist/` through Wrangler (`wrangler pages deploy`).
 
-Demo product images are served from `GET /api/images/{productId}/{slot}` (and `/api/images/hero`). On first request the Nitro handler tries Unsplash, stores bytes in the `IMAGES_KV` binding (`demo-commerc-images` in `wrangler.jsonc`), and returns same-origin responses on later hits. If Unsplash is unreachable (common on restricted networks), it falls back to `server/assets/demo-images/` seeds and still warms KV. If both upstream and seed fail (or KV is unavailable), the handler still returns HTTP 200 with an SVG placeholder so NuxtImg never receives a hard error. Catalog/detail cards also swap to `/images/product-placeholder.svg` on `@error`. Local `nuxt dev` uses the same binding via `nitro-cloudflare-dev`.
+Demo product images are served from `GET /api/images/{productId}/{slot}` (and `/api/images/hero`). On first request the Nitro handler tries Unsplash, stores bytes in the `IMAGES_KV` binding (`demo-commerc-images` in `wrangler.jsonc`), and returns same-origin responses on later hits. If Unsplash is unreachable (common on restricted networks), it falls back to `server/assets/demo-images/` seeds and still warms KV. If both upstream and seed fail (or KV is unavailable), the handler still returns HTTP 200 with an SVG placeholder so NuxtImg never receives a hard error. Catalog/detail cards also swap to `/images/product-placeholder.svg` on `@error`.
 
 `wrangler.jsonc` binds `IMAGES_KV` to:
 
@@ -698,6 +730,12 @@ Demo product images are served from `GET /api/images/{productId}/{slot}` (and `/
 - preview id: `8ba3ed241d624d288d47b851c61a2413` (`demo-commerc-images_preview`)
 
 `npm run deploy` applies that binding from config. If the Pages project was created before the KV block existed, confirm **Settings → Functions → KV namespace bindings** shows `IMAGES_KV` pointing at `demo-commerc-images`.
+
+### CI note
+
+`.github/workflows/ci.yml` runs lint + typecheck only (no test or production-build job).
+
+The lockfile was generated with **npm 11** (`packageManager`: `npm@11.18.0`). GitHub Actions’ default Node 22 ships npm 10, which can reject some lockfile optional-peer entries. CI therefore installs the `packageManager` npm version before `npm ci`.
 
 ## Known Limitations
 
@@ -710,27 +748,30 @@ The repository is not yet a complete checkout product.
 - Automated component/E2E tests are not yet included.
 - CI covers lint and typecheck only (no test or build job yet).
 - Final pixel-level Figma comparison for filters and every breakpoint is still required.
-- Color-mode toggle is not currently present in the header (an earlier experiment was removed during Figma shell alignment).
 - No authentication, payment, inventory reservation, order submission, or durable persistence is included.
 
 These limitations are intentionally documented so reviewers can distinguish current behavior from the proposed architecture.
-
 
 ## Review Guide
 
 For a focused code review, start with:
 
-- `app/pages/index.vue` — catalog SSR data flow, URL state, filtering, search, and sorting;
+- `app/pages/index.vue` — catalog SSR data flow, URL state (`category`, `q`), filtering, search, and sorting;
 - `app/pages/products/[id].vue` — route-aware SSR fetching and detail orchestration;
-- `app/components/ProductCard.vue` — typed reusable component boundary;
-- `app/components/ProductGallery.vue` — isolated visual behavior with NuxtImg;
+- `app/components/CatalogFilters.vue` — sticky filter sidebar UI;
+- `app/components/ProductCard.vue` — typed reusable component boundary + NuxtImg fallback;
+- `app/components/ProductGallery.vue` — isolated gallery behavior with NuxtImg;
+- `app/components/ProductSpecTable.vue` — detail specification presentation;
 - `app/components/MainHeader.vue` / `MainMenu.vue` — UHeader shell and RTL nav;
+- `app/components/AppLogo.vue` — فُـ / فُروشگاه brand mark;
 - `server/data/products.ts` — Persian demo data pack;
 - `server/api/products/*` — Nitro product endpoints;
 - `server/api/images/[...path].get.ts` — KV-backed image proxy;
+- `server/utils/image-cache.ts` — Unsplash → KV → seed → placeholder pipeline;
 - `shared/types/product.ts` — product contract (auto-imported);
 - `shared/utils/products.ts` — pure helpers (auto-imported);
-- `nuxt.config.ts` — full SSR, fonts, Nuxt Image, Cloudflare preset;
+- `nuxt.config.ts` — full SSR, fonts, Nuxt Image `provider: 'none'`, Cloudflare preset;
 - `wrangler.jsonc` — Pages project and `IMAGES_KV` bindings;
-- `.github/workflows/ci.yml` — lint + typecheck CI;
-- `package.json` — quality and delivery commands.
+- `.github/workflows/ci.yml` — lint + typecheck CI + npm pin;
+- `package.json` — quality and delivery commands;
+- `AGENTS.md` — scope and contributor conventions for agents.
