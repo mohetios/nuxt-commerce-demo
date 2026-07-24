@@ -9,7 +9,7 @@ const links = [
   {
     key: 'products',
     label: 'لیست محصولات',
-    to: '#',
+    to: '/',
     icon: 'i-lucide-layout-grid'
   },
   {
@@ -28,8 +28,7 @@ const links = [
     key: 'contact',
     label: 'تماس با ما',
     to: '#',
-    icon: 'i-lucide-phone-call',
-    active: true
+    icon: 'i-lucide-phone-call'
   }
 ]
 </script>
@@ -40,9 +39,9 @@ const links = [
     :orientation="orientation"
     highlight
     :ui="{
-      list: orientation === 'horizontal' ? 'gap-7' : 'gap-1',
-      link: 'gap-2 whitespace-nowrap text-base font-semibold',
-      linkLeadingIcon: 'size-5'
+      list: orientation === 'horizontal' ? 'gap-6' : 'gap-1',
+      link: 'gap-2 whitespace-nowrap text-sm font-semibold text-ink',
+      linkLeadingIcon: 'size-4 text-muted-blue'
     }"
   />
 </template>

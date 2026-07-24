@@ -1,23 +1,36 @@
 <template>
-  <UHeader title="Nuxt Market">
+  <UHeader>
     <template #title>
-      <AppLogo class="h-9 w-auto" />
+      <NuxtLink
+        to="/"
+        class="inline-flex items-center"
+        aria-label="Nuxt Market"
+      >
+        <AppLogo class="h-8 w-auto lg:h-9" />
+      </NuxtLink>
     </template>
 
-    <MainMenu />
+    <MainMenu class="hidden lg:flex" />
 
     <template #right>
-      <UColorModeButton />
+      <UButton
+        to="#"
+        color="primary"
+        size="md"
+        icon="i-lucide-phone-call"
+        class="hidden sm:inline-flex px-6 text-sm"
+      >
+        تماس
+      </UButton>
 
       <UButton
         to="#"
         color="primary"
-        size="lg"
+        size="md"
         icon="i-lucide-phone-call"
-        class="rounded-2xl px-8 font-semibold"
-      >
-        تماس
-      </UButton>
+        class="sm:hidden"
+        aria-label="تماس"
+      />
     </template>
 
     <template #body>

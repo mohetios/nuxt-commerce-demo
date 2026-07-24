@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-dvh bg-muted/30 text-default">
+  <div class="app-canvas">
     <MainHeader />
 
     <UMain>
