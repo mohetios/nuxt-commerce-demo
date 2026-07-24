@@ -128,7 +128,7 @@ async function clearAllFilters() {
     <AppBreadcrumb :items="breadcrumbItems" />
 
     <div class="flex flex-col gap-5 min-[900px]:flex-row min-[900px]:items-start min-[900px]:gap-6">
-      <aside class="hidden w-[240px] shrink-0 min-[900px]:block xl:w-[280px]">
+      <aside class="hidden w-[240px] shrink-0 min-[900px]:sticky min-[900px]:top-20 min-[900px]:block min-[900px]:self-start xl:w-[280px]">
         <CatalogFilters
           v-model:selected-category="selectedCategory"
           v-model:search="search"
