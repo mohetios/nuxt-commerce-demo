@@ -614,7 +614,8 @@ npm run preview
 ### Cloudflare Pages
 
 Project name: `demo-commerc`  
-Production URL: https://demo-commerc.pages.dev
+Production URL: https://demo-commerce.mohetios.dev/  
+Cloudflare Pages URL: https://demo-commerc.pages.dev
 
 ```bash
 npm run deploy
