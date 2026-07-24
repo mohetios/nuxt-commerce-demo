@@ -15,19 +15,19 @@ const links = [
   {
     key: 'consultation',
     label: 'دریافت مشاوره',
-    to: '#',
+    to: '/consultation',
     icon: 'i-lucide-book-open'
   },
   {
     key: 'faq',
     label: 'سوالات متداول',
-    to: '#',
+    to: '/faq',
     icon: 'i-lucide-message-circle-question'
   },
   {
     key: 'contact',
     label: 'تماس با ما',
-    to: '#',
+    to: '/contact',
     icon: 'i-lucide-phone-call'
   }
 ]

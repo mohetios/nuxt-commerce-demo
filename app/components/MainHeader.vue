@@ -1,5 +1,5 @@
 <template>
-  <UHeader toggle-side="end">
+  <UHeader toggle-side="left">
     <template #title>
       <NuxtLink
         to="/"
@@ -14,7 +14,7 @@
 
     <template #right>
       <UButton
-        to="#"
+        to="/contact"
         color="primary"
         size="md"
         icon="i-lucide-phone-call"
@@ -24,7 +24,7 @@
       </UButton>
 
       <UButton
-        to="#"
+        to="/contact"
         color="primary"
         size="md"
         icon="i-lucide-phone-call"
