@@ -15,17 +15,10 @@ const { data: categoryOptions } = await useFetch<string[]>('/api/categories', {
 })
 
 const route = useRoute()
-const categories = computed(() => ['همه', ...categoryOptions.value])
-const selectedCategory = computed({
-  get: () => typeof route.query.category === 'string' ? route.query.category : 'همه',
-  set: async (category: string) => {
-    await navigateTo(category === 'همه'
-      ? { path: '/' }
-      : { path: '/', query: { category } })
-  }
-})
-
+const filtersOpen = ref(false)
+const search = ref(typeof route.query.q === 'string' ? route.query.q : '')
 const sort = ref('featured')
+
 const sortItems = [
   { label: 'ویژه', value: 'featured' },
   { label: 'ارزان‌ترین', value: 'price-asc' },
@@ -33,20 +26,60 @@ const sortItems = [
   { label: 'بالاترین امتیاز', value: 'rating' }
 ]
 
-const heroImageSrc = ref('/api/images/hero')
+const categories = computed(() => ['همه محصولات', ...categoryOptions.value])
 
-function onHeroImageError() {
-  if (heroImageSrc.value !== PRODUCT_IMAGE_PLACEHOLDER) {
-    heroImageSrc.value = PRODUCT_IMAGE_PLACEHOLDER
+const selectedCategory = computed({
+  get: () => {
+    if (typeof route.query.category === 'string') {
+      return route.query.category
+    }
+    return 'همه محصولات'
+  },
+  set: async (category: string) => {
+    await navigateTo({
+      path: '/',
+      query: {
+        ...(category !== 'همه محصولات' ? { category } : {}),
+        ...(search.value.trim() ? { q: search.value.trim() } : {})
+      }
+    })
   }
-}
+})
+
+const breadcrumbItems = computed(() => [
+  { label: 'خانه', to: '/' },
+  { label: selectedCategory.value === 'همه محصولات' ? 'محصولات' : selectedCategory.value }
+])
+
+const activeChips = computed(() => {
+  const chips: Array<{ key: string, label: string }> = []
+
+  if (selectedCategory.value !== 'همه محصولات') {
+    chips.push({ key: 'category', label: selectedCategory.value })
+  }
+
+  if (search.value.trim()) {
+    chips.push({ key: 'search', label: `جست‌وجو: ${search.value.trim()}` })
+  }
+
+  return chips
+})
 
 const visibleProducts = computed(() => {
-  const categoryProducts = selectedCategory.value === 'همه'
+  const query = search.value.trim().toLowerCase()
+
+  const categoryProducts = selectedCategory.value === 'همه محصولات'
     ? products.value
     : products.value.filter(product => product.category === selectedCategory.value)
 
-  return [...categoryProducts].sort((a, b) => {
+  const filtered = query
+    ? categoryProducts.filter((product) => {
+        const haystack = `${product.title} ${product.category} ${product.description}`.toLowerCase()
+        return haystack.includes(query)
+      })
+    : categoryProducts
+
+  return [...filtered].sort((a, b) => {
     if (sort.value === 'price-asc') return a.price - b.price
     if (sort.value === 'price-desc') return b.price - a.price
     if (sort.value === 'rating') return getProductRating(b) - getProductRating(a)
@@ -55,146 +88,212 @@ const visibleProducts = computed(() => {
     return a.id - b.id
   })
 })
+
+async function applyFilters() {
+  filtersOpen.value = false
+  await navigateTo({
+    path: '/',
+    query: {
+      ...(selectedCategory.value !== 'همه محصولات' ? { category: selectedCategory.value } : {}),
+      ...(search.value.trim() ? { q: search.value.trim() } : {})
+    }
+  })
+}
+
+function openFilters() {
+  filtersOpen.value = true
+}
+
+async function clearChip(key: string) {
+  if (key === 'category') {
+    selectedCategory.value = 'همه محصولات'
+    return
+  }
+
+  if (key === 'search') {
+    search.value = ''
+    await applyFilters()
+  }
+}
+
+async function clearAllFilters() {
+  search.value = ''
+  filtersOpen.value = false
+  await navigateTo({ path: '/' })
+}
 </script>
 
 <template>
-  <div>
-    <section class="border-b border-default bg-default">
-      <UContainer class="grid gap-10 py-10 lg:grid-cols-[1fr_420px] lg:items-center lg:py-14">
-        <div class="max-w-3xl space-y-6">
-          <div class="space-y-3">
+  <UContainer class="py-6 md:py-8">
+    <AppBreadcrumb :items="breadcrumbItems" />
+
+    <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:gap-6">
+      <aside class="hidden w-[260px] shrink-0 lg:block xl:w-[280px]">
+        <CatalogFilters
+          v-model:selected-category="selectedCategory"
+          v-model:search="search"
+          :categories="categories"
+          @apply="applyFilters"
+        />
+      </aside>
+
+      <div class="min-w-0 flex-1 space-y-4">
+        <div class="surface-card flex flex-col gap-4 p-3 sm:p-4">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 class="section-title">
+                فهرست محصولات
+              </h1>
+              <p class="secondary-text mt-1">
+                {{ visibleProducts.length }} مورد
+                <span v-if="selectedCategory !== 'همه محصولات'">
+                  در {{ selectedCategory }}
+                </span>
+              </p>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <UButton
+                color="neutral"
+                variant="outline"
+                icon="i-lucide-sliders-horizontal"
+                class="lg:hidden"
+                :ui="{ base: 'rounded-full border-soft-border' }"
+                @click="openFilters"
+              >
+                فیلتر
+                <UBadge
+                  v-if="activeChips.length"
+                  color="primary"
+                  variant="solid"
+                  size="sm"
+                  class="ms-1"
+                >
+                  {{ activeChips.length }}
+                </UBadge>
+              </UButton>
+
+              <USelect
+                v-model="sort"
+                :items="sortItems"
+                icon="i-lucide-arrow-up-down"
+                class="min-w-40 flex-1 sm:flex-none"
+                :ui="{
+                  base: 'rounded-full bg-field ring-soft-border'
+                }"
+              />
+            </div>
+          </div>
+
+          <div
+            v-if="activeChips.length"
+            class="flex flex-wrap items-center gap-2"
+          >
             <UBadge
+              v-for="chip in activeChips"
+              :key="chip.key"
               color="primary"
               variant="soft"
-              icon="i-lucide-sparkles"
+              size="md"
+              class="gap-1 pe-1"
             >
-              کالکشن جدید فصل
+              {{ chip.label }}
+              <UButton
+                color="primary"
+                variant="link"
+                size="xs"
+                icon="i-lucide-x"
+                :aria-label="`حذف ${chip.label}`"
+                class="ms-0.5"
+                @click="clearChip(chip.key)"
+              />
             </UBadge>
-            <h1 class="text-4xl font-bold tracking-normal text-highlighted sm:text-5xl">
-              محصولات برای روزمرگی‌های شما
-            </h1>
-            <p class="max-w-2xl text-base leading-7 text-muted">
-              کاتالوگ دمو با داده فارسی از API داخلی Nuxt، کارت‌های واکنش‌گرا، فیلتر، جزئیات محصول، امتیاز و قیمت.
-            </p>
-          </div>
 
-          <div class="flex flex-wrap gap-3">
-            <UButton
-              color="primary"
-              size="lg"
-              icon="i-lucide-shopping-bag"
-              to="#products"
-            >
-              مشاهده محصولات
-            </UButton>
             <UButton
               color="neutral"
-              variant="outline"
-              size="lg"
-              icon="i-lucide-truck"
+              variant="ghost"
+              size="xs"
+              class="text-muted-blue"
+              @click="clearAllFilters"
             >
-              ارسال رایگان
+              پاک کردن
             </UButton>
           </div>
         </div>
 
-        <div class="relative aspect-[4/3] overflow-hidden rounded-lg border border-default bg-muted">
-          <NuxtImg
-            :src="heroImageSrc"
-            alt="نمایش محصولات فروشگاه"
-            class="h-full w-full object-cover"
-            width="840"
-            height="630"
-            sizes="(max-width: 1024px) 100vw, 420px"
-            loading="eager"
-            fetchpriority="high"
-            placeholder
-            quality="80"
-            @error="onHeroImageError"
-          />
-          <div class="absolute inset-x-4 bottom-4">
-            <UCard :ui="{ body: 'p-4 sm:p-4' }">
-              <div class="flex items-center justify-between gap-4">
-                <div>
-                  <p class="text-sm font-semibold text-highlighted">
-                    انتخاب آخر هفته
-                  </p>
-                  <p class="text-xs text-muted">
-                    {{ products.length }} محصول آماده مشاهده
-                  </p>
-                </div>
-                <UButton
-                  color="primary"
-                  icon="i-lucide-arrow-left"
-                  aria-label="مرور محصولات"
-                />
-              </div>
-            </UCard>
-          </div>
-        </div>
-      </UContainer>
-    </section>
+        <UAlert
+          v-if="error"
+          color="error"
+          variant="soft"
+          icon="i-lucide-circle-alert"
+          title="بارگذاری محصولات ناموفق بود"
+          description="لطفاً دوباره تلاش کنید."
+        />
 
-    <UContainer
-      id="products"
-      class="py-10"
-    >
-      <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h2 class="text-2xl font-semibold tracking-normal text-highlighted">
-            فهرست محصولات
-          </h2>
-          <p class="mt-1 text-sm text-muted">
-            {{ visibleProducts.length }} مورد در {{ selectedCategory }}
+        <div
+          v-else-if="pending"
+          class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
+        >
+          <USkeleton
+            v-for="index in 6"
+            :key="index"
+            class="h-80 rounded-2xl"
+          />
+        </div>
+
+        <div
+          v-else-if="!visibleProducts.length"
+          class="surface-card flex flex-col items-center gap-3 px-6 py-16 text-center"
+        >
+          <UIcon
+            name="i-lucide-search-x"
+            class="size-10 text-muted-blue"
+          />
+          <p class="section-title">
+            محصولی یافت نشد
           </p>
+          <p class="secondary-text max-w-sm">
+            فیلترها را تغییر دهید یا جست‌وجو را پاک کنید تا همه محصولات را ببینید.
+          </p>
+          <UButton
+            color="primary"
+            variant="soft"
+            @click="clearAllFilters"
+          >
+            نمایش همه محصولات
+          </UButton>
         </div>
 
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <USelectMenu
-            v-model="selectedCategory"
-            :items="categories"
-            class="w-full sm:w-48"
-            icon="i-lucide-tags"
-          />
-          <USelect
-            v-model="sort"
-            :items="sortItems"
-            class="w-full sm:w-52"
-            icon="i-lucide-arrow-up-down"
+        <div
+          v-else
+          class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
+        >
+          <ProductCard
+            v-for="product in visibleProducts"
+            :key="product.id"
+            :product="product"
           />
         </div>
       </div>
+    </div>
 
-      <UAlert
-        v-if="error"
-        color="error"
-        variant="soft"
-        icon="i-lucide-circle-alert"
-        title="بارگذاری محصولات ناموفق بود"
-        description="لطفاً دوباره تلاش کنید."
-      />
-
-      <div
-        v-else-if="pending"
-        class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
-      >
-        <USkeleton
-          v-for="index in 6"
-          :key="index"
-          class="h-96 rounded-lg"
+    <USlideover
+      v-model:open="filtersOpen"
+      title="فیلتر محصولات"
+      description="دسته‌بندی و جست‌وجو"
+      :ui="{
+        content: 'max-w-sm bg-canvas',
+        body: 'bg-canvas'
+      }"
+    >
+      <template #body>
+        <CatalogFilters
+          v-model:selected-category="selectedCategory"
+          v-model:search="search"
+          :categories="categories"
+          @apply="applyFilters"
         />
-      </div>
-
-      <div
-        v-else
-        class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
-      >
-        <ProductCard
-          v-for="product in visibleProducts"
-          :key="product.id"
-          :product="product"
-        />
-      </div>
-    </UContainer>
-  </div>
+      </template>
+    </USlideover>
+  </UContainer>
 </template>
