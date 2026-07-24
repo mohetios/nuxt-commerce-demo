@@ -1,22 +1,25 @@
 <script setup lang="ts">
-import type { FakeStoreProduct } from '~/data/products'
-import { FAKE_STORE_API_BASE, getProductRating } from '~/data/products'
-
 useSeoMeta({
-  title: 'Products | Nuxt Market',
-  description: 'Browse commerce products fetched from Fake Store API with Nuxt UI components.'
+  title: 'محصولات | Nuxt Market',
+  description: 'مرور محصولات فروشگاه دمو با رندر کامل SSR از طریق API داخلی Nuxt.'
 })
 
-const { data: products, pending, error } = await useFetch<FakeStoreProduct[]>(`${FAKE_STORE_API_BASE}/products`, {
-  default: () => []
+const { data: products, pending, error } = await useFetch<Product[]>('/api/products', {
+  default: () => [],
+  key: 'catalog-products'
+})
+
+const { data: categoryOptions } = await useFetch<string[]>('/api/categories', {
+  default: () => [],
+  key: 'catalog-categories'
 })
 
 const route = useRoute()
-const categories = computed(() => ['All', ...Array.from(new Set(products.value.map(product => product.category)))])
+const categories = computed(() => ['همه', ...categoryOptions.value])
 const selectedCategory = computed({
-  get: () => typeof route.query.category === 'string' ? route.query.category : 'All',
+  get: () => typeof route.query.category === 'string' ? route.query.category : 'همه',
   set: async (category: string) => {
-    await navigateTo(category === 'All'
+    await navigateTo(category === 'همه'
       ? { path: '/' }
       : { path: '/', query: { category } })
   }
@@ -24,14 +27,14 @@ const selectedCategory = computed({
 
 const sort = ref('featured')
 const sortItems = [
-  { label: 'Featured', value: 'featured' },
-  { label: 'Price: Low to high', value: 'price-asc' },
-  { label: 'Price: High to low', value: 'price-desc' },
-  { label: 'Top rated', value: 'rating' }
+  { label: 'ویژه', value: 'featured' },
+  { label: 'ارزان‌ترین', value: 'price-asc' },
+  { label: 'گران‌ترین', value: 'price-desc' },
+  { label: 'بالاترین امتیاز', value: 'rating' }
 ]
 
 const visibleProducts = computed(() => {
-  const categoryProducts = selectedCategory.value === 'All'
+  const categoryProducts = selectedCategory.value === 'همه'
     ? products.value
     : products.value.filter(product => product.category === selectedCategory.value)
 
@@ -39,6 +42,7 @@ const visibleProducts = computed(() => {
     if (sort.value === 'price-asc') return a.price - b.price
     if (sort.value === 'price-desc') return b.price - a.price
     if (sort.value === 'rating') return getProductRating(b) - getProductRating(a)
+    if (sort.value === 'featured') return Number(b.featured) - Number(a.featured) || a.id - b.id
 
     return a.id - b.id
   })
@@ -56,13 +60,13 @@ const visibleProducts = computed(() => {
               variant="soft"
               icon="i-lucide-sparkles"
             >
-              New season essentials
+              کالکشن جدید فصل
             </UBadge>
             <h1 class="text-4xl font-bold tracking-normal text-highlighted sm:text-5xl">
-              Products for everyday routines
+              محصولات برای روزمرگی‌های شما
             </h1>
             <p class="max-w-2xl text-base leading-7 text-muted">
-              Browse products from Fake Store API with responsive cards, filters, product details, ratings, pricing, and purchase actions built with Nuxt UI.
+              کاتالوگ دمو با داده فارسی از API داخلی Nuxt، کارت‌های واکنش‌گرا، فیلتر، جزئیات محصول، امتیاز و قیمت.
             </p>
           </div>
 
@@ -73,7 +77,7 @@ const visibleProducts = computed(() => {
               icon="i-lucide-shopping-bag"
               to="#products"
             >
-              Shop products
+              مشاهده محصولات
             </UButton>
             <UButton
               color="neutral"
@@ -81,7 +85,7 @@ const visibleProducts = computed(() => {
               size="lg"
               icon="i-lucide-truck"
             >
-              Free shipping
+              ارسال رایگان
             </UButton>
           </div>
         </div>
@@ -89,24 +93,24 @@ const visibleProducts = computed(() => {
         <div class="relative aspect-[4/3] overflow-hidden rounded-lg border border-default bg-muted">
           <img
             src="https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=1200&q=85"
-            alt="Curated product display"
+            alt="نمایش محصولات فروشگاه"
             class="h-full w-full object-cover"
           >
-          <div class="absolute bottom-4 left-4 right-4">
+          <div class="absolute inset-x-4 bottom-4">
             <UCard :ui="{ body: 'p-4 sm:p-4' }">
               <div class="flex items-center justify-between gap-4">
                 <div>
                   <p class="text-sm font-semibold text-highlighted">
-                    Weekend edit
+                    انتخاب آخر هفته
                   </p>
                   <p class="text-xs text-muted">
-                    {{ products.length }} products ready to preview
+                    {{ products.length }} محصول آماده مشاهده
                   </p>
                 </div>
                 <UButton
                   color="primary"
-                  icon="i-lucide-arrow-right"
-                  aria-label="Browse"
+                  icon="i-lucide-arrow-left"
+                  aria-label="مرور محصولات"
                 />
               </div>
             </UCard>
@@ -122,10 +126,10 @@ const visibleProducts = computed(() => {
       <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h2 class="text-2xl font-semibold tracking-normal text-highlighted">
-            Product list
+            فهرست محصولات
           </h2>
           <p class="mt-1 text-sm text-muted">
-            {{ visibleProducts.length }} items in {{ selectedCategory }}
+            {{ visibleProducts.length }} مورد در {{ selectedCategory }}
           </p>
         </div>
 
@@ -150,8 +154,8 @@ const visibleProducts = computed(() => {
         color="error"
         variant="soft"
         icon="i-lucide-circle-alert"
-        title="Products could not be loaded"
-        description="Please try again later."
+        title="بارگذاری محصولات ناموفق بود"
+        description="لطفاً دوباره تلاش کنید."
       />
 
       <div

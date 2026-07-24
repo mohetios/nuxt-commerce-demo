@@ -1,38 +1,18 @@
 <script setup lang="ts">
-import type { FakeStoreProduct } from '~/data/products'
-import { FAKE_STORE_API_BASE, getProductRating, getProductReviewCount } from '~/data/products'
-
 const route = useRoute()
 const productId = computed(() => Number(route.params.id))
 
-const { data: product, pending, error } = await useFetch<FakeStoreProduct>(() => `${FAKE_STORE_API_BASE}/products/${productId.value}`)
-const { data: products } = await useFetch<FakeStoreProduct[]>(`${FAKE_STORE_API_BASE}/products`, {
+const { data: product, pending, error } = await useFetch<Product>(() => `/api/products/${productId.value}`)
+
+const { data: relatedProducts } = await useFetch<Product[]>(() => `/api/products/${productId.value}/related`, {
   default: () => []
 })
 
-const relatedProducts = computed(() => {
-  if (!product.value) {
-    return []
-  }
-
-  const currentProduct = product.value
-  const sameCategory = products.value.filter(item => item.category === currentProduct.category && item.id !== currentProduct.id)
-  const fallback = products.value.filter(item => item.id !== currentProduct.id)
-
-  return (sameCategory.length ? sameCategory : fallback).slice(0, 3)
-})
-
 const quantity = ref(1)
-const productImages = computed(() => product.value ? [product.value.image] : [])
-
-const formatPrice = (price: number) => new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  maximumFractionDigits: 0
-}).format(price)
+const productImages = computed(() => product.value ? getProductImages(product.value) : [])
 
 useSeoMeta({
-  title: () => product.value ? `${product.value.title} | Nuxt Market` : 'Product | Nuxt Market',
+  title: () => product.value ? `${product.value.title} | Nuxt Market` : 'محصول | Nuxt Market',
   description: () => product.value?.description,
   ogTitle: () => product.value?.title,
   ogDescription: () => product.value?.description,
@@ -47,9 +27,9 @@ useSeoMeta({
         to="/"
         color="neutral"
         variant="ghost"
-        icon="i-lucide-arrow-left"
+        icon="i-lucide-arrow-right"
       >
-        Back to products
+        بازگشت به محصولات
       </UButton>
     </div>
 
@@ -58,8 +38,8 @@ useSeoMeta({
       color="error"
       variant="soft"
       icon="i-lucide-circle-alert"
-      title="Product could not be loaded"
-      description="Please go back to the product list and try again."
+      title="بارگذاری محصول ناموفق بود"
+      description="لطفاً به فهرست محصولات برگردید و دوباره تلاش کنید."
     />
 
     <div
@@ -95,8 +75,8 @@ useSeoMeta({
           </div>
 
           <div>
-            <p class="text-sm font-medium uppercase tracking-wide text-muted">
-              Fake Store API
+            <p class="text-sm font-medium tracking-wide text-muted">
+              دیتاپک دموی داخلی
             </p>
             <h1 class="mt-2 text-3xl font-bold tracking-normal text-highlighted sm:text-4xl">
               {{ product.title }}
@@ -113,7 +93,7 @@ useSeoMeta({
               />
             </div>
             <p class="text-sm text-muted">
-              {{ getProductRating(product) }} rating from {{ getProductReviewCount(product) }} reviews
+              امتیاز {{ getProductRating(product) }} از {{ getProductReviewCount(product) }} نظر
             </p>
           </div>
 
@@ -127,32 +107,32 @@ useSeoMeta({
             <div class="flex items-end justify-between gap-4">
               <div>
                 <p class="text-3xl font-bold text-highlighted">
-                  {{ formatPrice(product.price) }}
+                  {{ formatProductPrice(product.price) }}
                 </p>
               </div>
               <UBadge
-                color="success"
+                :color="isProductInStock(product) ? 'success' : 'error'"
                 variant="soft"
               >
-                Available
+                {{ isProductInStock(product) ? 'موجود' : 'ناموجود' }}
               </UBadge>
             </div>
 
             <USeparator />
 
             <div class="grid gap-4 sm:grid-cols-2">
-              <UFormField label="Category">
+              <UFormField label="دسته‌بندی">
                 <UInput
                   :model-value="product.category"
                   readonly
                   icon="i-lucide-tags"
                 />
               </UFormField>
-              <UFormField label="Quantity">
+              <UFormField label="تعداد">
                 <UInputNumber
                   v-model="quantity"
                   :min="1"
-                  :max="10"
+                  :max="Math.min(10, product.stock || 1)"
                 />
               </UFormField>
             </div>
@@ -163,8 +143,9 @@ useSeoMeta({
                 size="lg"
                 block
                 icon="i-lucide-shopping-cart"
+                :disabled="!isProductInStock(product)"
               >
-                Add to cart
+                افزودن به سبد
               </UButton>
               <UButton
                 color="neutral"
@@ -173,7 +154,7 @@ useSeoMeta({
                 block
                 icon="i-lucide-heart"
               >
-                Save
+                ذخیره
               </UButton>
             </div>
           </div>
@@ -183,17 +164,17 @@ useSeoMeta({
           type="multiple"
           :default-value="['features']"
           :items="[{
-            label: 'Features',
+            label: 'ویژگی‌ها',
             icon: 'i-lucide-list-checks',
             value: 'features',
             slot: 'features'
           }, {
-            label: 'Specifications',
+            label: 'مشخصات',
             icon: 'i-lucide-ruler',
             value: 'specs',
             slot: 'specs'
           }, {
-            label: 'Shipping and returns',
+            label: 'ارسال و مرجوعی',
             icon: 'i-lucide-truck',
             value: 'shipping',
             slot: 'shipping'
@@ -206,14 +187,14 @@ useSeoMeta({
                   name="i-lucide-check"
                   class="size-4 text-primary"
                 />
-                Product data is loaded from Fake Store API.
+                داده محصول از API داخلی Nuxt با رندر SSR بارگذاری می‌شود.
               </li>
               <li class="flex items-center gap-2">
                 <UIcon
                   name="i-lucide-check"
                   class="size-4 text-primary"
                 />
-                Category, price, description, image, and rating are API-backed.
+                دسته‌بندی، قیمت، توضیحات، تصاویر و امتیاز از دیتاپک دمو تامین شده‌اند.
               </li>
             </ul>
           </template>
@@ -222,7 +203,7 @@ useSeoMeta({
             <dl class="grid gap-3 pb-3 text-sm">
               <div class="flex items-center justify-between gap-4 border-b border-default pb-2">
                 <dt class="text-muted">
-                  Product ID
+                  شناسه محصول
                 </dt>
                 <dd class="font-medium text-highlighted">
                   {{ product.id }}
@@ -230,7 +211,7 @@ useSeoMeta({
               </div>
               <div class="flex items-center justify-between gap-4 border-b border-default pb-2">
                 <dt class="text-muted">
-                  Category
+                  دسته‌بندی
                 </dt>
                 <dd class="font-medium text-highlighted">
                   {{ product.category }}
@@ -238,10 +219,10 @@ useSeoMeta({
               </div>
               <div class="flex items-center justify-between gap-4">
                 <dt class="text-muted">
-                  Source
+                  موجودی
                 </dt>
                 <dd class="font-medium text-highlighted">
-                  Fake Store API
+                  {{ product.stock }}
                 </dd>
               </div>
             </dl>
@@ -249,7 +230,7 @@ useSeoMeta({
 
           <template #shipping>
             <p class="pb-3 text-sm leading-6 text-muted">
-              Free standard shipping on mock orders over $75. Returns are accepted within 30 days in original condition.
+              ارسال استاندارد رایگان برای سفارش‌های آزمایشی بالای ۷۵۰٬۰۰۰ تومان. مرجوعی تا ۳۰ روز در شرایط اولیه پذیرفته می‌شود.
             </p>
           </template>
         </UAccordion>
@@ -263,10 +244,10 @@ useSeoMeta({
       <div class="mb-5 flex items-center justify-between gap-4">
         <div>
           <h2 class="text-2xl font-semibold tracking-normal text-highlighted">
-            Related products
+            محصولات مرتبط
           </h2>
           <p class="mt-1 text-sm text-muted">
-            More from {{ product.category }}
+            بیشتر از {{ product.category }}
           </p>
         </div>
       </div>

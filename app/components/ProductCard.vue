@@ -1,16 +1,7 @@
 <script setup lang="ts">
-import type { FakeStoreProduct } from '~/data/products'
-import { getProductRating, getProductReviewCount, getProductSummary } from '~/data/products'
-
 defineProps<{
-  product: FakeStoreProduct
+  product: Product
 }>()
-
-const formatPrice = (price: number) => new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  maximumFractionDigits: 0
-}).format(price)
 </script>
 
 <template>
@@ -29,12 +20,12 @@ const formatPrice = (price: number) => new Intl.NumberFormat('en-US', {
         <img
           :src="product.image"
           :alt="product.title"
-          class="h-full w-full object-contain p-8 transition duration-300 hover:scale-105"
+          class="h-full w-full object-cover p-2 transition duration-300 hover:scale-105"
           loading="lazy"
         >
 
         <UBadge
-          class="absolute left-3 top-3"
+          class="absolute start-3 top-3"
           color="primary"
           variant="soft"
         >
@@ -48,7 +39,7 @@ const formatPrice = (price: number) => new Intl.NumberFormat('en-US', {
         <div class="space-y-2">
           <div class="flex items-start justify-between gap-3">
             <div>
-              <p class="text-xs font-medium uppercase tracking-wide text-muted">
+              <p class="text-xs font-medium tracking-wide text-muted">
                 {{ product.category }}
               </p>
               <NuxtLink
@@ -58,9 +49,9 @@ const formatPrice = (price: number) => new Intl.NumberFormat('en-US', {
                 {{ product.title }}
               </NuxtLink>
             </div>
-            <div class="text-right">
+            <div class="text-end">
               <p class="font-semibold text-highlighted">
-                {{ formatPrice(product.price) }}
+                {{ formatProductPrice(product.price) }}
               </p>
             </div>
           </div>
@@ -85,10 +76,10 @@ const formatPrice = (price: number) => new Intl.NumberFormat('en-US', {
             color="primary"
             variant="soft"
             size="sm"
-            icon="i-lucide-arrow-right"
+            icon="i-lucide-arrow-left"
             trailing
           >
-            View
+            مشاهده
           </UButton>
         </div>
       </div>

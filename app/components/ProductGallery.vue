@@ -10,7 +10,8 @@ watch(
   () => props.images,
   (images) => {
     selectedImage.value = images[0] ?? ''
-  }
+  },
+  { deep: true }
 )
 </script>
 
