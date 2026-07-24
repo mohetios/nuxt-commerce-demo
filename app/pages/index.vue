@@ -91,11 +91,18 @@ const visibleProducts = computed(() => {
         </div>
 
         <div class="relative aspect-[4/3] overflow-hidden rounded-lg border border-default bg-muted">
-          <img
-            src="https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=1200&q=85"
+          <NuxtImg
+            src="/api/images/hero"
             alt="نمایش محصولات فروشگاه"
             class="h-full w-full object-cover"
-          >
+            width="840"
+            height="630"
+            sizes="(max-width: 1024px) 100vw, 420px"
+            loading="eager"
+            fetchpriority="high"
+            placeholder
+            quality="80"
+          />
           <div class="absolute inset-x-4 bottom-4">
             <UCard :ui="{ body: 'p-4 sm:p-4' }">
               <div class="flex items-center justify-between gap-4">

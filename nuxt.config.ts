@@ -2,6 +2,7 @@
 export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
+    '@nuxt/image',
     '@nuxt/ui',
     'nitro-cloudflare-dev'
   ],
@@ -47,5 +48,12 @@ export default defineNuxtConfig({
         braceStyle: '1tbs'
       }
     }
+  },
+
+  // IPX needs Node/Sharp and breaks on Cloudflare Pages SSR/edge.
+  // `none` is a passthrough that still supports NuxtImg props (lazy, sizes, placeholder UX).
+  image: {
+    provider: 'none',
+    quality: 75
   }
 })

@@ -17,12 +17,17 @@ defineProps<{
       class="block"
     >
       <div class="relative aspect-[4/3] overflow-hidden bg-muted">
-        <img
+        <NuxtImg
           :src="product.image"
           :alt="product.title"
           class="h-full w-full object-cover p-2 transition duration-300 hover:scale-105"
+          width="640"
+          height="480"
+          sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
           loading="lazy"
-        >
+          placeholder
+          quality="75"
+        />
 
         <UBadge
           class="absolute start-3 top-3"
