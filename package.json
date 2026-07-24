@@ -4,12 +4,15 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
+    "build:cf": "nuxt build --preset=cloudflare_pages",
     "check": "npm run lint && npm run typecheck",
+    "deploy": "npm run build:cf && wrangler pages deploy dist --project-name=demo-commerc",
     "dev": "nuxt dev",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "postinstall": "nuxt prepare",
     "preview": "nuxt preview",
+    "preview:cf": "wrangler pages dev dist",
     "typecheck": "nuxt typecheck"
   },
   "dependencies": {
@@ -22,8 +25,10 @@
   "devDependencies": {
     "@nuxt/eslint": "^1.16.0",
     "eslint": "^10.6.0",
+    "nitro-cloudflare-dev": "^0.2.2",
     "typescript": "^6.0.3",
-    "vue-tsc": "^3.3.5"
+    "vue-tsc": "^3.3.5",
+    "wrangler": "^4.114.0"
   },
   "packageManager": "npm@11.18.0"
 }

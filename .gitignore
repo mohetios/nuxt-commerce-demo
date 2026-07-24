@@ -38,7 +38,9 @@ coverage/
 .env
 .env.*
 !.env.example
+.dev.vars
 
 # Deployment / local tooling
 .vercel/
 .netlify/
+.wrangler/

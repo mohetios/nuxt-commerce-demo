@@ -2,7 +2,8 @@
 export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
-    '@nuxt/ui'
+    '@nuxt/ui',
+    'nitro-cloudflare-dev'
   ],
 
   ssr: true,
@@ -20,6 +21,13 @@ export default defineNuxtConfig({
   },
 
   compatibilityDate: '2026-06-30',
+
+  nitro: {
+    preset: 'cloudflare_pages',
+    prerender: {
+      autoSubfolderIndex: false
+    }
+  },
 
   typescript: {
     strict: true,
