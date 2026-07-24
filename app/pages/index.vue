@@ -1,7 +1,7 @@
 <script setup lang="ts">
 useSeoMeta({
-  title: 'محصولات | فُروش',
-  description: 'مرور محصولات فروشگاه دموی فُروش با رندر کامل SSR از طریق API داخلی Nuxt.'
+  title: 'محصولات | فُروشگاه',
+  description: 'مرور محصولات فروشگاه دموی فُروشگاه با رندر کامل SSR از طریق API داخلی Nuxt.'
 })
 
 const { data: products, pending, error } = await useFetch<Product[]>('/api/products', {
