@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { fa_ir } from '@nuxt/ui/locale'
+
 useHead({
   meta: [
     { name: 'viewport', content: 'width=device-width, initial-scale=1' }
@@ -25,7 +27,7 @@ useSeoMeta({
 </script>
 
 <template>
-  <UApp>
+  <UApp :locale="fa_ir" dir="rtl">
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>

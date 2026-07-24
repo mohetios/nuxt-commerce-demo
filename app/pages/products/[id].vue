@@ -30,7 +30,7 @@ const specificationRows = computed(() => {
   }
 
   const baseRows = [
-    { label: 'برند', value: 'Nuxt Market' },
+    { label: 'برند', value: 'فُروش' },
     { label: 'مدل', value: product.value.model || product.value.slug },
     { label: 'دسته‌بندی', value: product.value.category },
     { label: 'توضیحات', value: product.value.description }
@@ -55,7 +55,7 @@ const specificationRows = computed(() => {
 })
 
 useSeoMeta({
-  title: () => product.value ? `${product.value.title} | Nuxt Market` : 'محصول | Nuxt Market',
+  title: () => product.value ? `${product.value.title} | فُروش` : 'محصول | فُروش',
   description: () => product.value?.description,
   ogTitle: () => product.value?.title,
   ogDescription: () => product.value?.description,

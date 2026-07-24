@@ -1,13 +1,16 @@
 <template>
-  <div class="flex items-center gap-2">
-    <span class="grid size-9 place-items-center rounded-lg bg-primary text-primary-foreground">
-      <UIcon
-        name="i-lucide-package"
-        class="size-5"
-      />
+  <div
+    class="inline-flex items-center gap-2"
+    dir="rtl"
+  >
+    <span
+      class="select-none text-[1.35rem] font-black leading-none text-primary lg:text-[1.5rem]"
+      aria-hidden="true"
+    >
+      فُـ
     </span>
-    <span class="text-base font-bold tracking-normal text-highlighted">
-      Nuxt Market
+    <span class="text-base font-bold leading-none tracking-normal text-highlighted lg:text-lg">
+      فُروش
     </span>
   </div>
 </template>

@@ -5,7 +5,7 @@
         <div class="space-y-4">
           <AppLogo class="h-9 w-auto text-ink" />
           <p class="secondary-text max-w-sm">
-            فروشگاه دموی Nuxt با کاتالوگ فارسی، API داخلی و رندر کامل سمت سرور.
+            فروشگاه دموی فُروش با کاتالوگ فارسی، API داخلی و رندر کامل سمت سرور.
           </p>
         </div>
 
@@ -69,7 +69,7 @@
     <div class="border-t border-soft-border bg-surface-soft">
       <UContainer class="flex flex-col items-center justify-between gap-4 py-5 sm:flex-row">
         <p class="meta-text text-center sm:text-start">
-          © {{ new Date().getFullYear() }} Nuxt Market — فروشگاه دمو
+          © {{ new Date().getFullYear() }} فُروش — فروشگاه دمو
         </p>
         <div class="flex items-center gap-3 text-brand-500">
           <UIcon
