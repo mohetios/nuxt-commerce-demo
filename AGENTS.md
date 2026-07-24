@@ -30,10 +30,13 @@ The app is SSR-first. Product data comes from an internal Nitro demo API backed 
 - `shared/types/product.ts`: product contract (auto-imported).
 - `shared/utils/products.ts`: product helpers (auto-imported).
 - `server/data/products.ts`: Persian demo product data pack.
+- `server/data/product-image-sources.ts`: private Unsplash URLs for the KV image cache.
+- `server/assets/demo-images/`: offline seed bytes used when Unsplash is unreachable.
 - `server/api/products/index.get.ts`: product collection endpoint.
 - `server/api/products/[id].get.ts`: product detail endpoint.
 - `server/api/products/[id]/related.get.ts`: related products endpoint.
 - `server/api/categories/index.get.ts`: category list endpoint.
+- `server/api/images/[...path].get.ts`: KV-backed product image proxy.
 - `app/pages/index.vue`: product list home page.
 - `app/pages/products/[id].vue`: product details page.
 - `app/assets/css/main.css`: Tailwind and Nuxt UI theme tokens.

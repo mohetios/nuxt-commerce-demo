@@ -622,6 +622,8 @@ npm run deploy
 
 This builds with the `cloudflare_pages` Nitro preset and uploads `dist/` through Wrangler.
 
+Demo product images are served from `GET /api/images/{productId}/{slot}` (and `/api/images/hero`). On first request the Nitro handler tries Unsplash, stores bytes in the `IMAGES_KV` binding (`demo-commerc-images` in `wrangler.jsonc`), and returns same-origin responses on later hits. If Unsplash is unreachable (common on restricted networks), it falls back to `server/assets/demo-images/` seeds and still warms KV. Local `nuxt dev` uses the same binding via `nitro-cloudflare-dev`.
+
 ## Known Limitations
 
 The repository is not yet a complete checkout product.
@@ -629,7 +631,7 @@ The repository is not yet a complete checkout product.
 - Add-to-cart and save buttons are currently visual interactions only.
 - Cart and favorite state have not been implemented.
 - Product data is a server-side demo pack, not a production commerce backend.
-- Product images are remote Unsplash placeholders and are not a final media pipeline.
+- Product images are Unsplash demos cached in Cloudflare KV and served through Nitro (`/api/images/*`), not a production media CDN.
 - Automated tests and CI are planned but not yet included.
 - Final pixel-level Figma comparison is still required.
 - No authentication, payment, inventory reservation, order submission, or durable persistence is included.
