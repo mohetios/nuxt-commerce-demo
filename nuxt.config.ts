@@ -50,6 +50,20 @@ export default defineNuxtConfig({
     }
   },
 
+  // Nuxt UI registers @nuxt/fonts; declare Vazirmatn so Persian/Arabic
+  // glyphs and UI weights resolve reliably (served from /_fonts/).
+  fonts: {
+    families: [
+      {
+        name: 'Vazirmatn',
+        global: true,
+        weights: ['100 900'],
+        styles: ['normal'],
+        subsets: ['arabic', 'latin', 'latin-ext']
+      }
+    ]
+  },
+
   // IPX needs Node/Sharp and breaks on Cloudflare Pages SSR/edge.
   // `none` is a passthrough that still supports NuxtImg props (lazy, sizes, placeholder UX).
   image: {
