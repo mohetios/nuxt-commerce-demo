@@ -1,4 +1,10 @@
 <script setup lang="ts">
+withDefaults(defineProps<{
+  orientation?: 'horizontal' | 'vertical'
+}>(), {
+  orientation: 'horizontal'
+})
+
 const links = [
   {
     key: 'products',
@@ -31,11 +37,11 @@ const links = [
 <template>
   <UNavigationMenu
     :items="links"
-    orientation="horizontal"
+    :orientation="orientation"
     highlight
     :ui="{
-      list: 'flex-row-reverse gap-7',
-      link: 'flex-row-reverse gap-2 whitespace-nowrap text-base font-semibold',
+      list: orientation === 'horizontal' ? 'gap-7' : 'gap-1',
+      link: 'gap-2 whitespace-nowrap text-base font-semibold',
       linkLeadingIcon: 'size-5'
     }"
   />

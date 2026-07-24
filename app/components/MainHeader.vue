@@ -1,15 +1,13 @@
 <template>
-  <header class="sticky top-0 z-40 border-b border-default bg-default/85 backdrop-blur">
-    <UContainer class="flex h-20 flex-row-reverse items-center justify-between gap-6">
-      <NuxtLink
-        to="/"
-        class="flex items-center gap-3 text-highlighted"
-        aria-label="Go to home"
-      >
-        <AppLogo class="h-9 w-auto" />
-      </NuxtLink>
+  <UHeader title="Nuxt Market">
+    <template #title>
+      <AppLogo class="h-9 w-auto" />
+    </template>
 
-      <MainMenu class="hidden flex-1 justify-center md:flex" />
+    <MainMenu />
+
+    <template #right>
+      <UColorModeButton />
 
       <UButton
         to="#"
@@ -20,10 +18,10 @@
       >
         تماس
       </UButton>
-    </UContainer>
+    </template>
 
-    <UContainer class="border-t border-default md:hidden">
-      <MainMenu class="h-12 justify-end overflow-x-auto" />
-    </UContainer>
-  </header>
+    <template #body>
+      <MainMenu orientation="vertical" />
+    </template>
+  </UHeader>
 </template>
