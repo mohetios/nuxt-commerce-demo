@@ -1,4 +1,4 @@
-# فُروشگاه — Nuxt Commerce Demo
+# Nuxt Commerce Demo
 
 A frontend commerce implementation built for a technical hiring challenge using **Nuxt 4**, Vue 3, TypeScript, **Nuxt UI 4**, and an internal Nitro demo product API. The storefront brand is **فُروشگاه** (logotype mark **فُـ**).
 
