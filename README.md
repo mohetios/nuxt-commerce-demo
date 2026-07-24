@@ -1,7 +1,62 @@
 # Nuxt Commerce Demo
 
-A frontend commerce implementation built for a technical hiring challenge using Nuxt 4, Vue 3, TypeScript, Nuxt UI, and the Fake Store API.
+A frontend commerce implementation built for a technical hiring challenge using Nuxt 4, Vue 3, TypeScript, Nuxt UI, and an internal Nitro demo product API.
 
+The repository is intentionally documented as both:
+
+- a record of the current implementation; and
+- a clear completion plan for the remaining product and engineering work.
+
+**Project status:** Core catalog browsing is implemented with a Persian demo data pack served by Nuxt server routes and rendered through full SSR. Cart, favorites, automated tests, and final Figma-fidelity review remain next steps.
+
+## Full SSR Decision
+
+This project is deliberately configured as a **full SSR** commerce UI.
+
+### Why full SSR
+
+- Catalog and product-detail pages must be readable on first paint with product content already present in the HTML response.
+- SEO metadata for product pages depends on server-resolved product data.
+- Reviewers should see a deterministic first render instead of a client-only loading waterfall.
+- Same-origin `/api/*` calls during SSR avoid external-network flakiness from third-party demo APIs.
+
+### How SSR is implemented
+
+1. `ssr: true` is set explicitly in `nuxt.config.ts`, with page route rules forcing SSR for `/` and `/products/**`.
+2. Pages load data with Nuxt `useFetch` against internal routes such as `/api/products` and `/api/products/:id`.
+3. During server render, `useFetch` resolves those Nitro handlers in-process, embeds the payload into the SSR response, and hydrates the client without refetching by default.
+4. The demo catalog lives in `server/data/products.ts` and is exposed only through Nitro handlers. Pages never import the data pack directly.
+
+### What `useFetch` gives us here
+
+`useFetch` is SSR-aware by default in Nuxt. On the server it awaits the request before HTML is sent; on the client it reuses the SSR payload. That is exactly the data path this challenge needs for catalog and detail pages.
+
+Client-only fetching (`$fetch` in `onMounted`, or disabling SSR for product routes) was rejected because it would move critical product content after hydration and weaken both SEO and first-content reliability.
+
+### Boundary of the decision
+
+Full SSR applies to storefront pages and their initial product payloads. Cart/favorites persistence can still become client shared state later without abandoning SSR for catalog and detail routes.
+
+## Links
+
+- [Nuxt documentation](https://nuxt.com/docs)
+- [Nuxt UI documentation](https://ui.nuxt.com)
+- [Nitro server routes](https://nuxt.com/docs/guide/directory-structure/server)
+
+## Challenge Objective
+
+The purpose of the project is not only to reproduce a static design. It is intended to demonstrate how I approach a frontend product from design analysis to delivery:
+
+- translate Figma screens into reusable UI boundaries;
+- define a small, understandable application architecture;
+- model product API data with TypeScript;
+- implement responsive list and detail pages with full SSR;
+- handle loading, failure, empty, and success states;
+- keep navigation and filter state predictable;
+- preserve room for cart and user interactions without prematurely over-engineering the codebase;
+- document tradeoffs, remaining work, and quality gates honestly.
+
+## Current Scope
 
 ### Implemented
 
@@ -9,7 +64,9 @@ A frontend commerce implementation built for a technical hiring challenge using 
 - Vue 3 Composition API with `<script setup lang="ts">`
 - Nuxt UI and Tailwind CSS based interface
 - Shared default layout, header, navigation, and footer
-- Product catalog fetched from Fake Store API
+- Persian RTL storefront chrome (`lang="fa"` / `dir="rtl"`)
+- Internal Nitro demo API for products, categories, and related items
+- Server-side Persian demo data pack (`server/data/products.ts`)
 - Typed product model and product helper functions
 - Responsive product-card grid
 - Product category filtering
@@ -17,10 +74,11 @@ A frontend commerce implementation built for a technical hiring challenge using 
 - Product sorting by featured order, price, and rating
 - Dynamic product detail route: `/products/:id`
 - Product gallery component
-- Related-product selection
+- Related-product selection via `/api/products/:id/related`
 - Dynamic SEO metadata for product pages
 - Loading skeletons
 - API error states
+- Explicit full-SSR configuration
 - ESLint and strict TypeScript configuration
 - Local development, typecheck, lint, build, and preview scripts
 
@@ -45,19 +103,20 @@ A frontend commerce implementation built for a technical hiring challenge using 
 
 | Area | Technology | Responsibility |
 | --- | --- | --- |
-| Framework | Nuxt 4 | Routing, SSR-capable rendering, application conventions, SEO |
+| Framework | Nuxt 4 | Routing, full SSR rendering, application conventions, SEO |
 | UI runtime | Vue 3 | Reactive components and Composition API |
 | Language | TypeScript | API contracts, props, helpers, and stricter correctness checks |
 | Component system | Nuxt UI | Accessible UI primitives and consistent component APIs |
 | Styling | Tailwind CSS | Responsive layout and design implementation |
 | Icons | Iconify | Lucide and brand icon collections |
-| Data source | Fake Store API | Product catalog and product detail data |
-| Data fetching | Nuxt `useFetch` | SSR-safe initial API requests and request state |
+| Data pack | `server/data/products.ts` | Persian demo catalog used by Nitro handlers |
+| Server API | Nitro `/api/*` | Products, categories, and related-product endpoints |
+| Data fetching | Nuxt `useFetch` | SSR-resolved initial API requests and request state |
 | Quality | ESLint + Nuxt typecheck | Static analysis and framework-aware type checking |
 
 ## Architecture Overview
 
-The current architecture is deliberately small. API reads remain close to the pages that own them, reusable rendering logic lives in components, and API contracts/helpers are centralized in one data module.
+The architecture stays small: pages own orchestration, components stay presentational, shared types/utils are auto-imported, and the demo catalog is served only through Nitro.
 
 ```mermaid
 flowchart LR
@@ -66,7 +125,7 @@ flowchart LR
     subgraph Nuxt[Nuxt 4 Application]
         Router[File-based Router]
 
-        subgraph Pages[Page Layer]
+        subgraph Pages[Page Layer SSR]
             Catalog["app/pages/index.vue\nCatalog orchestration"]
             Detail["app/pages/products/[id].vue\nProduct detail orchestration"]
         end
@@ -79,16 +138,15 @@ flowchart LR
             Footer[Footer]
         end
 
-        subgraph Domain[Typed Product Boundary]
-            Types[FakeStoreProduct type]
-            Helpers[Rating, review, summary helpers]
-            Config[API base URL]
+        subgraph Domain[Shared Auto-imports]
+            Types["shared/types\nProduct"]
+            Helpers["shared/utils\nRating, price, summary"]
         end
 
         Fetch[Nuxt useFetch]
+        Nitro[Nitro /api handlers]
+        DataPack[server/data/products.ts]
     end
-
-    API[Fake Store API]
 
     User --> Router
     Router --> Catalog
@@ -108,7 +166,8 @@ flowchart LR
 
     Catalog --> Fetch
     Detail --> Fetch
-    Fetch --> API
+    Fetch --> Nitro
+    Nitro --> DataPack
 ```
 
 ## Current Data Flow
@@ -118,19 +177,19 @@ flowchart LR
 ```mermaid
 sequenceDiagram
     actor User
-    participant Page as Catalog Page
+    participant Page as Catalog Page SSR
     participant Nuxt as useFetch
-    participant API as Fake Store API
+    participant API as Nitro /api/products
     participant State as Reactive/Computed State
     participant UI as ProductCard Grid
 
     User->>Page: Open catalog
-    Page->>Nuxt: Request GET /products
-    Nuxt->>API: Fetch product collection
-    API-->>Nuxt: Product[]
+    Page->>Nuxt: Request GET /api/products
+    Page->>Nuxt: Request GET /api/categories
+    Nuxt->>API: Resolve during SSR
+    API-->>Nuxt: Product[] / categories
     Nuxt-->>Page: data / pending / error
 
-    Page->>State: Derive categories
     Page->>State: Read category from route query
     Page->>State: Apply category filter
     Page->>State: Apply selected sorting rule
@@ -143,7 +202,7 @@ sequenceDiagram
     State-->>UI: Updated product grid
 ```
 
-The URL is the source of truth for category selection. This keeps the selected category shareable, refresh-safe, and compatible with browser navigation. Sorting is currently local UI state because it does not yet need to be shareable or persisted.
+The URL is the source of truth for category selection. Sorting remains local UI state because it does not yet need to be shareable or persisted.
 
 ### Product detail page
 
@@ -152,7 +211,7 @@ sequenceDiagram
     actor User
     participant Route as /products/:id
     participant Nuxt as useFetch
-    participant API as Fake Store API
+    participant API as Nitro /api
     participant Detail as Product Detail State
     participant UI as Detail Components
 
@@ -160,30 +219,27 @@ sequenceDiagram
     Route->>Detail: Parse productId
 
     par Fetch selected product
-        Detail->>Nuxt: GET /products/:id
+        Detail->>Nuxt: GET /api/products/:id
         Nuxt->>API: Product request
         API-->>Nuxt: Product
-    and Fetch candidate products
-        Detail->>Nuxt: GET /products
-        Nuxt->>API: Product collection request
+    and Fetch related products
+        Detail->>Nuxt: GET /api/products/:id/related
+        Nuxt->>API: Related products request
         API-->>Nuxt: Product[]
     end
 
-    Detail->>Detail: Select same-category products
-    Detail->>Detail: Exclude current product
-    Detail->>Detail: Fall back to remaining products
     Detail-->>UI: Product, gallery, quantity, related products
     UI-->>User: Product detail page
 ```
 
-The current detail page favors clarity over abstraction. If the project grows, duplicated endpoint logic can move into typed catalog composables without changing the page/component responsibilities.
-
 ## Rendering and State Boundaries
 
 ```text
-Remote server state
+Remote server state (SSR via Nitro)
 ├── Product list
+├── Category list
 ├── Product detail
+├── Related products
 └── Request status/error
 
 URL state
@@ -194,10 +250,8 @@ Local page state
 └── Selected quantity
 
 Derived state
-├── Available categories
 ├── Filtered/sorted products
-├── Product image list
-└── Related products
+└── Product image list
 
 Planned shared client state
 ├── Cart
@@ -205,6 +259,16 @@ Planned shared client state
 ```
 
 This separation prevents temporary UI state from being mixed with API data and avoids introducing a global store before shared state actually exists.
+
+## Internal Demo API
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/products` | Full demo catalog |
+| `GET` | `/api/products?category=...` | Optional category filter |
+| `GET` | `/api/products/:id` | Single product |
+| `GET` | `/api/products/:id/related` | Same-category related products |
+| `GET` | `/api/categories` | Unique category labels |
 
 ## Repository Structure
 
@@ -219,11 +283,21 @@ This separation prevents temporary UI state from being mixed with API data and a
 │   │   ├── MainFooter.vue
 │   │   ├── ProductCard.vue
 │   │   └── ProductGallery.vue
-│   ├── data/products.ts          # API base URL, product type, helpers
 │   ├── layouts/default.vue       # Shared application shell
 │   └── pages/
 │       ├── index.vue             # Catalog page
 │       └── products/[id].vue     # Dynamic product detail page
+├── server/
+│   ├── data/products.ts          # Persian demo data pack
+│   └── api/
+│       ├── categories/index.get.ts
+│       └── products/
+│           ├── index.get.ts
+│           ├── [id].get.ts
+│           └── [id]/related.get.ts
+├── shared/
+│   ├── types/product.ts          # Product contract (auto-imported)
+│   └── utils/products.ts         # Product helpers (auto-imported)
 ├── eslint.config.mjs
 ├── nuxt.config.ts
 ├── package.json
@@ -233,9 +307,9 @@ This separation prevents temporary UI state from being mixed with API data and a
 
 ## Key Engineering Decisions
 
-### 1. Direct `useFetch` calls in pages
+### 1. Internal Nitro API + `useFetch` in pages
 
-The challenge currently uses a public read-only API and has two product-facing routes. Keeping initial requests in the owning pages makes the data dependency visible and avoids creating repository/service layers that would only wrap a single call.
+Pages call same-origin `/api/*` routes with `useFetch`. That keeps the data dependency visible at the page boundary while guaranteeing SSR resolution through Nitro.
 
 A composable/API-client layer becomes useful when one or more of these conditions appear:
 
@@ -243,26 +317,29 @@ A composable/API-client layer becomes useful when one or more of these condition
 - endpoint normalization becomes non-trivial;
 - authentication or shared headers are introduced;
 - caching and invalidation require explicit keys;
-- server-side API proxying becomes necessary;
 - multiple backend providers must share one frontend contract.
 
 ### 2. Typed API boundary
 
-`app/data/products.ts` owns the product contract, the API base URL, and pure helper functions. Components do not redefine external response shapes.
+`shared/types/product.ts` owns the product contract and `shared/utils/products.ts` owns pure helper functions. Both are Nuxt auto-imports.
 
-### 3. URL-backed filtering
+### 3. Server-only demo data pack
+
+`server/data/products.ts` is never imported by Vue components. The browser only sees HTTP responses from `/api/*`, which mirrors a real BFF/backend boundary.
+
+### 4. URL-backed filtering
 
 Category selection is represented by `?category=...` rather than hidden global state. It survives refreshes and creates directly shareable catalog views.
 
-### 4. Derived data stays computed
+### 5. Derived data stays computed
 
-Categories, filtered products, sorted products, images, and related products are derived with `computed` state instead of being duplicated and manually synchronized.
+Filtered products, sorted products, and image lists are derived with `computed` state instead of being duplicated and manually synchronized.
 
-### 5. Reusable components remain presentation-focused
+### 6. Reusable components remain presentation-focused
 
 `ProductCard` receives a typed product and renders it. The catalog page owns filtering and sorting; the detail page owns route-aware fetching and product-specific orchestration.
 
-### 6. Strictness without custom framework overrides
+### 7. Strictness without custom framework overrides
 
 The project keeps Nuxt's generated TypeScript project references and adds stricter compiler checks through `nuxt.config.ts`, including:
 
@@ -289,7 +366,7 @@ flowchart TB
         Feedback[Toast and Error Feedback]
     end
 
-    API[Fake Store API]
+    API[Nitro Demo API]
     QA[Quality Gates\nLint / Typecheck / Tests / Build]
     Delivery[Public GitHub Repository and Deployment]
 
@@ -360,7 +437,7 @@ flowchart LR
 
 **Status:** Complete
 
-- Product collection loads from Fake Store API
+- Product collection loads from the internal Nitro demo API
 - Loading and error states exist
 - Category filter works
 - Selected category is represented in the URL
@@ -372,10 +449,10 @@ flowchart LR
 **Status:** Complete for read-only browsing
 
 - Dynamic product route works
-- Product data and SEO metadata are route-aware
+- Product data and SEO metadata are route-aware and SSR-resolved
 - Quantity input is available
 - Product gallery is separated into a component
-- Related products are derived from API data
+- Related products are fetched from `/api/products/:id/related`
 - Missing/failing requests display a visible failure state
 
 ### Milestone 4 — Commerce Interaction
@@ -475,7 +552,7 @@ The repository history should communicate the implementation progression. A suit
 ```text
 chore: initialize Nuxt application and quality tooling
 feat: add shared commerce layout and theme
-feat: add typed Fake Store product boundary
+feat: add typed product boundary and Nitro demo API
 feat: implement responsive product catalog
 feat: add category query state and product sorting
 feat: implement dynamic product detail route
@@ -534,18 +611,28 @@ npm run build
 npm run preview
 ```
 
+### Cloudflare Pages
+
+Project name: `demo-commerc`  
+Production URL: https://demo-commerc.pages.dev
+
+```bash
+npm run deploy
+```
+
+This builds with the `cloudflare_pages` Nitro preset and uploads `dist/` through Wrangler.
+
 ## Known Limitations
 
 The repository is not yet a complete checkout product.
 
 - Add-to-cart and save buttons are currently visual interactions only.
 - Cart and favorite state have not been implemented.
-- The project currently consumes Fake Store API directly from the Nuxt pages.
-- API data is illustrative and does not provide a production commerce contract.
-- Product images and descriptions are controlled by the external API and have inconsistent dimensions/content quality.
+- Product data is a server-side demo pack, not a production commerce backend.
+- Product images are remote Unsplash placeholders and are not a final media pipeline.
 - Automated tests and CI are planned but not yet included.
 - Final pixel-level Figma comparison is still required.
-- No authentication, payment, inventory reservation, order submission, or server-backed persistence is included.
+- No authentication, payment, inventory reservation, order submission, or durable persistence is included.
 
 These limitations are intentionally documented so reviewers can distinguish current behavior from the proposed architecture.
 
@@ -554,11 +641,14 @@ These limitations are intentionally documented so reviewers can distinguish curr
 
 For a focused code review, start with:
 
-- `app/pages/index.vue` — catalog data flow, URL state, filtering, and sorting;
-- `app/pages/products/[id].vue` — route-aware data fetching and detail orchestration;
+- `app/pages/index.vue` — catalog SSR data flow, URL state, filtering, and sorting;
+- `app/pages/products/[id].vue` — route-aware SSR fetching and detail orchestration;
 - `app/components/ProductCard.vue` — typed reusable component boundary;
 - `app/components/ProductGallery.vue` — isolated visual behavior;
-- `app/data/products.ts` — external API contract and pure helpers;
-- `nuxt.config.ts` — strictness and framework configuration;
+- `server/data/products.ts` — Persian demo data pack;
+- `server/api/products/*` — Nitro product endpoints;
+- `shared/types/product.ts` — product contract (auto-imported);
+- `shared/utils/products.ts` — pure helpers (auto-imported);
+- `nuxt.config.ts` — full SSR and TypeScript strictness;
 - `package.json` — quality and delivery commands.
 
