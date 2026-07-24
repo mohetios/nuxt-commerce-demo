@@ -127,8 +127,8 @@ async function clearAllFilters() {
   <UContainer class="py-6 md:py-8">
     <AppBreadcrumb :items="breadcrumbItems" />
 
-    <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:gap-6">
-      <aside class="hidden w-[260px] shrink-0 lg:block xl:w-[280px]">
+    <div class="flex flex-col gap-5 min-[900px]:flex-row min-[900px]:items-start min-[900px]:gap-6">
+      <aside class="hidden w-[240px] shrink-0 min-[900px]:block xl:w-[280px]">
         <CatalogFilters
           v-model:selected-category="selectedCategory"
           v-model:search="search"
@@ -157,7 +157,7 @@ async function clearAllFilters() {
                 color="neutral"
                 variant="outline"
                 icon="i-lucide-sliders-horizontal"
-                class="lg:hidden"
+                class="min-[900px]:hidden"
                 :ui="{ base: 'rounded-full border-soft-border' }"
                 @click="openFilters"
               >
@@ -232,7 +232,7 @@ async function clearAllFilters() {
 
         <div
           v-else-if="pending"
-          class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
+          class="grid grid-cols-1 gap-4 min-[640px]:grid-cols-2 min-[1100px]:grid-cols-3"
         >
           <USkeleton
             v-for="index in 6"
@@ -266,7 +266,7 @@ async function clearAllFilters() {
 
         <div
           v-else
-          class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
+          class="grid grid-cols-1 gap-4 min-[640px]:grid-cols-2 min-[1100px]:grid-cols-3"
         >
           <ProductCard
             v-for="product in visibleProducts"

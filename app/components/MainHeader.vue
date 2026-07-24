@@ -10,7 +10,7 @@
       </NuxtLink>
     </template>
 
-    <MainMenu class="hidden lg:flex" />
+    <MainMenu class="hidden min-[900px]:flex" />
 
     <template #right>
       <UButton
