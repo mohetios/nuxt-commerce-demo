@@ -4,7 +4,7 @@
       <NuxtLink
         to="/"
         class="inline-flex items-center"
-        aria-label="Nuxt Market"
+        aria-label="فُروشگاه"
       >
         <AppLogo class="h-8 w-auto lg:h-9" />
       </NuxtLink>

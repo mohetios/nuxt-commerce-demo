@@ -30,7 +30,7 @@ const specificationRows = computed(() => {
   }
 
   const baseRows = [
-    { label: 'برند', value: 'فُروش' },
+    { label: 'برند', value: 'فُروشگاه' },
     { label: 'مدل', value: product.value.model || product.value.slug },
     { label: 'دسته‌بندی', value: product.value.category },
     { label: 'توضیحات', value: product.value.description }
@@ -55,7 +55,7 @@ const specificationRows = computed(() => {
 })
 
 useSeoMeta({
-  title: () => product.value ? `${product.value.title} | فُروش` : 'محصول | فُروش',
+  title: () => product.value ? `${product.value.title} | فُروشگاه` : 'محصول | فُروشگاه',
   description: () => product.value?.description,
   ogTitle: () => product.value?.title,
   ogDescription: () => product.value?.description,

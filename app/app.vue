@@ -14,8 +14,8 @@ useHead({
   }
 })
 
-const title = 'Nuxt Market'
-const description = 'فروشگاه دموی Nuxt با کاتالوگ فارسی، API داخلی و رندر کامل SSR.'
+const title = 'فُروشگاه'
+const description = 'فروشگاه دموی فُروشگاه با کاتالوگ فارسی، API داخلی و رندر کامل SSR.'
 
 useSeoMeta({
   title,

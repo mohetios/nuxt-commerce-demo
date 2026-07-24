@@ -1,6 +1,6 @@
 # Nuxt Commerce Demo
 
-A frontend commerce implementation built for a technical hiring challenge using Nuxt 4, Vue 3, TypeScript, Nuxt UI, and an internal Nitro demo product API. The storefront brand is **فُروش** (logotype mark **فُـ**).
+A frontend commerce implementation built for a technical hiring challenge using Nuxt 4, Vue 3, TypeScript, Nuxt UI, and an internal Nitro demo product API. The storefront brand is **فُروشگاه** (logotype mark **فُـ**).
 
 The repository is intentionally documented as both:
 
